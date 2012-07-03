@@ -1,12 +1,15 @@
-#include <stddef.h> 
-#include <libircclient.h>
-#include <libirc_errors.h>
-#include <libirc_events.h>
-#include <libirc_options.h>
-#include <libirc_rfcnumeric.h>
+#include <slackbot.h> 
 
 int main(int argc, char *argv[]) { 
-    
+    int status = irc_connect(
+            &session, 
+            "skynet.csh.rit.edu", 
+            6697, 
+            "", 
+            "slackbot", 
+            "slackbot", 
+            "Slackwill");
+
     return 0; 
 }
 
