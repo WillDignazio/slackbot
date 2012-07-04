@@ -27,6 +27,8 @@
 #include <stdarg.h> 
 #include <stdlib.h>
 #include <string.h> 
+#include <syslog.h> 
+#include <unistd.h>
 
 #include <libircclient.h>
 #include <libirc_errors.h>
@@ -39,7 +41,17 @@
 
 int 
 main(int argc, char *argv[]) { 
-    
+  
+    /** 
+     * slackbot will display all of its logging 
+     * in the syslog file, //TODO: implement a verbose
+     * flag so that is can display to the terminal, 
+     * syslog, or both.
+     */
+    openlog("slackbot", LOG_CONS | LOG_PID | LOG_NDELAY, LOG_LOCAL1); 
+    syslog(LOG_MAKEPRI(LOG_LOCAL1, LOG_NOTICE), "Slackbot started "
+        "by User %d", getuid()); 
+
     irc_callbacks_t callbacks;
     irc_session_t *session; 
     irc_ctx_t ctx;  
@@ -52,7 +64,8 @@ main(int argc, char *argv[]) {
 
     session = irc_create_session(&callbacks); 
     if(!session) { 
-        printf("Could Not Create Session"); 
+        printf("Failed to Create Session"); 
+        syslog(LOG_INFO, "Failed to create slackbot session");
         return 1; 
     }
 
@@ -87,7 +100,10 @@ slack_handler_connect(
         const char **params, 
         unsigned int count) { 
     //printf("Connected To IRC Server"); 
-    irc_cmd_join(session, "#slackbot", NULL);
+    irc_ctx_t *ctx = (irc_ctx_t *)irc_get_ctx(session); 
+    irc_cmd_join(session, ctx->channel, NULL);
+    //TODO: Add password handling from ctx object 
+    syslog(LOG_INFO, "Connected to channel %s", ctx->channel);
 }
 
 
