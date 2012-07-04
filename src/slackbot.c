@@ -29,6 +29,7 @@
 #include <string.h> 
 #include <syslog.h> 
 #include <unistd.h>
+#include <argp.h>
 
 #include <libircclient.h>
 #include <libirc_errors.h>
@@ -38,10 +39,15 @@
 
 #include <slackbot.h> 
 
+static struct argp argp = { 0, 0, 0, doc }; 
 
 int 
 main(int argc, char *argv[]) { 
-  
+
+    //Argurment parse constants defined in the 
+    //slackbot.h header. 
+    argp_parse(&argp, argc, argv, 0, 0, 0); 
+
     /** 
      * slackbot will display all of its logging 
      * in the syslog file, //TODO: implement a verbose
@@ -92,6 +98,7 @@ main(int argc, char *argv[]) {
     return 0; 
 }
 
+
 void
 slack_handler_connect(
         irc_session_t *session, 
@@ -99,11 +106,11 @@ slack_handler_connect(
         const char *origin, 
         const char **params, 
         unsigned int count) { 
-    //printf("Connected To IRC Server"); 
+    //printf("Connected To IRC Server");
+    syslog(LOG_INFO, "Connecting To IRC Server");
     irc_ctx_t *ctx = (irc_ctx_t *)irc_get_ctx(session); 
     irc_cmd_join(session, ctx->channel, NULL);
     //TODO: Add password handling from ctx object 
-    syslog(LOG_INFO, "Connected to channel %s", ctx->channel);
 }
 
 
@@ -114,5 +121,6 @@ slack_handler_join(
         const char *origin, 
         const char **params, 
         unsigned int count) { 
-    printf("Joined IRC Channel"); 
+    irc_ctx_t *ctx = (irc_ctx_t *)irc_get_ctx(session); 
+    syslog(LOG_INFO, "Connected to channel %s", ctx->channel);
 }
