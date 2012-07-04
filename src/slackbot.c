@@ -18,16 +18,27 @@ main(int argc, char *argv[]) {
     
     irc_callbacks_t callbacks;
     irc_session_t *session; 
- 
+    irc_ctx_t ctx;  
+    
     //clear the callbacks just in case 
     memset(&callbacks, 0, sizeof(callbacks)); 
-    session = irc_create_session(&callbacks); 
-
+    
     callbacks.event_connect = slack_handler_connect; 
+    callbacks.event_join = slack_handler_join; 
+
+    session = irc_create_session(&callbacks); 
+    if(!session) { 
+        printf("Could Not Create Session"); 
+        return 1; 
+    }
+
+    ctx.channel = "#slackbot"; // TODO: Change to argument
+    ctx.nick = "slackbot"; //TODO: Change to argument
+    irc_set_ctx(session, &ctx); 
 
     irc_connect(
             session, 
-            "irc.freenode.net",
+            "localhost",
             6667, 
             "", 
             "slackbot", 
@@ -35,7 +46,7 @@ main(int argc, char *argv[]) {
             "Slackwill"); 
 
     if(irc_is_connected(session)) { 
-        printf("Connected, Destroying\n"); 
+        printf("Connected\n"); 
         irc_run(session);
     }
 
@@ -51,7 +62,17 @@ slack_handler_connect(
         const char *origin, 
         const char **params, 
         unsigned int count) { 
-    printf("Connected To IRC Server"); 
-    printf("Can you hear me?");
+    //printf("Connected To IRC Server"); 
+    irc_cmd_join(session, "#slackbot", NULL);
 }
 
+
+void 
+slack_handler_join(
+        irc_session_t *session, 
+        const char *event, 
+        const char *origin, 
+        const char **params, 
+        unsigned int count) { 
+    printf("Joined IRC Channel"); 
+}
