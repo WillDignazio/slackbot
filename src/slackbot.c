@@ -17,6 +17,7 @@
  */
 
 /**
+ * @title slackbot
  * @ingroup slackbot
  * @file slackbot.c
  * @author William Dignazio <slackwill@csh.rit.edu>
