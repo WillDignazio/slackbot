@@ -1,10 +1,18 @@
 #ifndef SLACKBOT_GAURD_H 
 #define SLACKBOT_GAURD_H 
 
+struct arguments { 
+    char *args[2]; // increase with every added argument
+    char *host; 
+    char *nick; 
+    char *user; 
+    char *name; 
+    char *channel;
+    int port; 
+};
 
-/* 
- * IRC Session contect struct 
- */
+
+/* IRC Session connect struct */
 typedef struct { 
     char *channel; 
     char *nick; 

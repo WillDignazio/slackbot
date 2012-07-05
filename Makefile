@@ -1,14 +1,14 @@
 CC = gcc
 LD = ld 
 LIBS = -L./libircclient-1.6/src  $(LIB_FLAGS)
-LIB_FLAGS = -lircclient -lpthread -lnsl 
+LIB_FLAGS = -lircclient -lpthread -lnsl -lssl
 CFLAGS = -Wall -pthread $(INCLUDES)
 INCLUDES = -I./libircclient-1.6/include -I./include 
 
 all: link
 
 link: build
-	$(CC) -o slackbot src/slackbot.o src/handlers.o -L./libircclient-1.6/src -lircclient -lpthread -lnsl
+	$(CC) -o slackbot src/slackbot.o src/handlers.o -L./libircclient-1.6/src -lircclient -lpthread -lnsl -lssl -lcrypto
 build:
 	$(CC) $(CFLAGS) -c -o src/slackbot.o ./src/slackbot.c
 	$(CC) $(CFLAGS) -c -o src/handlers.o ./src/handlers.c

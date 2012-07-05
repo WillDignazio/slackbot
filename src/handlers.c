@@ -44,9 +44,8 @@ slack_handler_connect(
     syslog(LOG_INFO, "Connecting To IRC Server");
     irc_ctx_t *ctx = (irc_ctx_t *)irc_get_ctx(session); 
     irc_cmd_join(session, ctx->channel, NULL);
-    
-    irc_cmd_msg(session, ctx->channel, "Hello, I am a slackbot channel manager"); 
     //TODO: Add password handling from ctx object 
+    
 }
 
 
@@ -59,4 +58,5 @@ slack_handler_join(
         unsigned int count) { 
     irc_ctx_t *ctx = (irc_ctx_t *)irc_get_ctx(session); 
     syslog(LOG_INFO, "Connected to channel %s", ctx->channel);
+    
 }

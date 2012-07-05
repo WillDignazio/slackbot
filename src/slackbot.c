@@ -39,6 +39,9 @@
 
 #include <slackbot.h> 
 
+char DEBUG = 0; 
+char NO_SSL = 0; 
+
 const char *argp_program_version = "slackbot v0.1.0";
 const char *argp_program_bug_address = "<slackwill@csh.rit.edu>"; 
 const char doc[] = 
@@ -47,26 +50,25 @@ const char doc[] =
 "and public IRC management.\n";
 
 static struct argp_option options[] = { 
+    {"debug", 'd', 0, 0, "Enable debug output"}, 
     {"port", 'p', "PORT", 0, "Port of the IRC server"},
-    {"host", 'h', "HOST", 0, "Host address of IRC server"},
+    {"host", 'h', "HOST", 0, "Host address of IRC server, add a # to the beginning of the address for ssl connections"},
     {"nick", 'n', "NICK", 0, "Nickname of the chat bot in channel"}, 
     {"user", 'u', "USER", 0, "User who started the bot"}, 
     {"name", 'N', "NAME", 0, "Real name, preferably starter of bot"},
     {"channel", 'c', "CHANNEL", 0, "Initial channel to join"}, 
+    {"ssl_no_verify", 'X', 0, 0, "No verification for SSL"}, 
     { 0 } //Terminating Option
 }; 
 
-static char args_doc[] = ""; // TODO: Add argument documentation for every entry
-
-struct arguments { 
-    char *args[2]; // increase with every added argument
-    char *host; 
-    char *nick; 
-    char *user; 
-    char *name; 
-    char *channel;
-    int port; 
-};
+static char args_doc[] = 
+"debug: takes no arguments, enables additional debug output.\n"
+"port: port slackbot connects to on IRC server, default is 6667.\n"
+"host: addresss of the server to connect to, default is localhost.\n"
+"nick: nickname of the slackbot in channel.\n"
+"user: username of the starter of the bot, default is None.\n" 
+"channel: channel to initially join, default is slackbot.\n"
+"ssl_no_verify: takes no arguments, disables ssl verification.\n";
 
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state) { 
@@ -77,6 +79,9 @@ parse_opt (int key, char *arg, struct argp_state *state) {
          ex. case 'q': set arguments x to y
          Also handle any ARGP_KEY_ARG's as well. */
 
+        case 'd': 
+            DEBUG = 1; 
+            break;
         case 'h': 
             arguments->host = arg; 
             break; 
@@ -94,6 +99,9 @@ parse_opt (int key, char *arg, struct argp_state *state) {
             break;
         case 'c': 
             arguments->channel = arg;
+            break;
+        case 'X': 
+            NO_SSL = 1;
             break;
 
         case ARGP_KEY_ARG: 
@@ -128,6 +136,10 @@ main(int argc, char *argv[]) {
     arguments.name = "slackbot";
     arguments.channel = "#slackbot";
 
+    irc_callbacks_t callbacks;
+    irc_session_t *session; 
+    irc_ctx_t ctx;  
+
     /* Argurment parse constants defined in the 
        slackbot.h header. */
     argp_parse(&argp, argc, argv, 0, 0, &arguments); 
@@ -142,10 +154,7 @@ main(int argc, char *argv[]) {
     syslog(LOG_MAKEPRI(LOG_LOCAL1, LOG_NOTICE), "Slackbot started "
         "by User %d", getuid()); 
 
-    irc_callbacks_t callbacks;
-    irc_session_t *session; 
-    irc_ctx_t ctx;  
-    
+        
     //clear the callbacks just in case 
     memset(&callbacks, 0, sizeof(callbacks)); 
     
@@ -163,6 +172,16 @@ main(int argc, char *argv[]) {
     ctx.nick = arguments.nick; 
     irc_set_ctx(session, &ctx); 
 
+    /* Set IRC options that could not be set outright. */
+    if(DEBUG) { 
+        irc_option_set(session, LIBIRC_OPTION_DEBUG); 
+        syslog(LOG_INFO, "Enabled Debug Output"); 
+    }
+    if(NO_SSL) { 
+        irc_option_set(session, LIBIRC_OPTION_SSL_NO_VERIFY); 
+        syslog(LOG_INFO, "Disabled SSL verification"); 
+    }
+
     /* Uses the arguments given with argp, addend new ones 
      * to the options and arguments struct, and add handlers 
      * to the option parse function, and */
@@ -177,7 +196,12 @@ main(int argc, char *argv[]) {
 
     if(irc_is_connected(session)) { 
         printf("Connected\n"); 
-        irc_run(session);
+        int status = irc_run(session);
+        if(status != 0) { 
+            syslog(LOG_INFO, "IRC run failed uncleanly"); 
+            printf("Session run error: %d\n", status); 
+        }
+
     }
 
     irc_disconnect(session);
