@@ -39,13 +39,48 @@
 
 #include <slackbot.h> 
 
-static struct argp argp = { 0, 0, 0, doc }; 
+static struct argp_option options[] = { 
+    { 0 } //Terminating Option
+}; 
+
+static struct argp argp = {options, 0, 0, doc };
+
+struct arguments { 
+    char *args[0]; // increase with every added argument
+};
+
+static error_t
+parse_opt (int key, char *arg, struct argp_state *state) { 
+    struct arguments *arguments = state->input; 
+
+    switch(key) { 
+        /* Handle any character options here. 
+         ex. case 'q': set arguments x to y
+         Also handle any ARGP_KEY_ARG's as well. */
+        case ARGP_KEY_ARG: 
+            if(state->arg_num >= 2)  //increment/decrement based on args
+                /* Too many arguments */
+                argp_usage(state); 
+            arguments->args[state->arg_num] = arg; 
+            break; 
+
+        case ARGP_KEY_END: 
+            if (state->arg_num < 2) //increment/decrement based on args
+                /* Not enough arguments */
+                argp_usage(state); 
+            break; 
+
+        default: 
+            return ARGP_ERR_UNKNOWN; 
+    }
+    return 0; 
+}
 
 int 
 main(int argc, char *argv[]) { 
 
-    //Argurment parse constants defined in the 
-    //slackbot.h header. 
+    /* Argurment parse constants defined in the 
+       slackbot.h header. */
     argp_parse(&argp, argc, argv, 0, 0, 0); 
 
     /** 
