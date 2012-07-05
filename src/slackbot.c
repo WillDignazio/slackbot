@@ -39,6 +39,13 @@
 
 #include <slackbot.h> 
 
+const char *argp_program_version = "slackbot v0.1.0";
+const char *argp_program_bug_address = "<slackwill@csh.rit.edu>"; 
+const char doc[] = 
+"slackbot is a chatbot designed for the Computer Sciense house.\n"
+"It's uses extend outside of our private channels for both personal\n"
+"and public IRC management.\n";
+
 static struct argp_option options[] = { 
     {"port", 'p', "PORT", 0, "Port of the IRC server"},
     {"host", 'h', "HOST", 0, "Host address of IRC server"},
@@ -176,31 +183,4 @@ main(int argc, char *argv[]) {
     irc_disconnect(session);
 
     return 0; 
-}
-
-
-void
-slack_handler_connect(
-        irc_session_t *session, 
-        const char *event, 
-        const char *origin, 
-        const char **params, 
-        unsigned int count) { 
-    //printf("Connected To IRC Server");
-    syslog(LOG_INFO, "Connecting To IRC Server");
-    irc_ctx_t *ctx = (irc_ctx_t *)irc_get_ctx(session); 
-    irc_cmd_join(session, ctx->channel, NULL);
-    //TODO: Add password handling from ctx object 
-}
-
-
-void 
-slack_handler_join(
-        irc_session_t *session, 
-        const char *event, 
-        const char *origin, 
-        const char **params, 
-        unsigned int count) { 
-    irc_ctx_t *ctx = (irc_ctx_t *)irc_get_ctx(session); 
-    syslog(LOG_INFO, "Connected to channel %s", ctx->channel);
 }
