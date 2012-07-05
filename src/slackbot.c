@@ -40,13 +40,25 @@
 #include <slackbot.h> 
 
 static struct argp_option options[] = { 
+    {"port", 'p', "PORT", 0, "Port of the IRC server"},
+    {"host", 'h', "HOST", 0, "Host address of IRC server"},
+    {"nick", 'n', "NICK", 0, "Nickname of the chat bot in channel"}, 
+    {"user", 'u', "USER", 0, "User who started the bot"}, 
+    {"name", 'N', "NAME", 0, "Real name, preferably starter of bot"},
+    {"channel", 'c', "CHANNEL", 0, "Initial channel to join"}, 
     { 0 } //Terminating Option
 }; 
 
-static struct argp argp = {options, 0, 0, doc };
+static char args_doc[] = ""; // TODO: Add argument documentation for every entry
 
 struct arguments { 
-    char *args[0]; // increase with every added argument
+    char *args[2]; // increase with every added argument
+    char *host; 
+    char *nick; 
+    char *user; 
+    char *name; 
+    char *channel;
+    int port; 
 };
 
 static error_t
@@ -54,18 +66,38 @@ parse_opt (int key, char *arg, struct argp_state *state) {
     struct arguments *arguments = state->input; 
 
     switch(key) { 
-        /* Handle any character options here. 
+        /* Handle any character options here seperately. 
          ex. case 'q': set arguments x to y
          Also handle any ARGP_KEY_ARG's as well. */
+
+        case 'h': 
+            arguments->host = arg; 
+            break; 
+        case 'p': 
+            arguments->port = atoi(arg); 
+            break;
+        case 'n': 
+            arguments->nick = arg; 
+            break;
+        case 'u': 
+            arguments->user = arg; 
+            break; 
+        case 'N': 
+            arguments->name = arg; 
+            break;
+        case 'c': 
+            arguments->channel = arg;
+            break;
+
         case ARGP_KEY_ARG: 
-            if(state->arg_num >= 2)  //increment/decrement based on args
+            if(state->arg_num >= 0)  //increment/decrement based on args
                 /* Too many arguments */
                 argp_usage(state); 
             arguments->args[state->arg_num] = arg; 
             break; 
 
         case ARGP_KEY_END: 
-            if (state->arg_num < 2) //increment/decrement based on args
+            if (state->arg_num < 0) //increment/decrement based on required args
                 /* Not enough arguments */
                 argp_usage(state); 
             break; 
@@ -76,12 +108,22 @@ parse_opt (int key, char *arg, struct argp_state *state) {
     return 0; 
 }
 
+static struct argp argp = {options, parse_opt, args_doc, doc };
+
 int 
 main(int argc, char *argv[]) { 
 
+    struct arguments arguments; 
+    arguments.host = "localhost"; 
+    arguments.port = 6667;
+    arguments.nick = "slackbot";
+    arguments.user = "None";
+    arguments.name = "slackbot";
+    arguments.channel = "#slackbot";
+
     /* Argurment parse constants defined in the 
        slackbot.h header. */
-    argp_parse(&argp, argc, argv, 0, 0, 0); 
+    argp_parse(&argp, argc, argv, 0, 0, &arguments); 
 
     /** 
      * slackbot will display all of its logging 
@@ -110,18 +152,21 @@ main(int argc, char *argv[]) {
         return 1; 
     }
 
-    ctx.channel = "#slackbot"; // TODO: Change to argument
-    ctx.nick = "slackbot"; //TODO: Change to argument
+    ctx.channel = arguments.channel;
+    ctx.nick = arguments.nick; 
     irc_set_ctx(session, &ctx); 
 
+    /* Uses the arguments given with argp, addend new ones 
+     * to the options and arguments struct, and add handlers 
+     * to the option parse function, and */
     irc_connect(
             session, 
-            "localhost",
-            6667, 
-            "", 
-            "slackbot", 
-            "slackbot", 
-            "Slackwill"); 
+            arguments.host,
+            arguments.port, 
+            "", //TODO: Add password support
+            arguments.nick, 
+            arguments.user, 
+            arguments.name); 
 
     if(irc_is_connected(session)) { 
         printf("Connected\n"); 
