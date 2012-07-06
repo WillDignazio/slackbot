@@ -9,7 +9,9 @@
  * into the main program. 
  */
 typedef struct module_t { 
-    void (*routine) (irc_session_t *session); 
+    int (*init) (irc_session_t *session ); 
+    int (*exit) ();
+    void (*routine) (); 
 } module_t;
 
 /* List of modules types, insert module handlers here.

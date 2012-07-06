@@ -35,6 +35,16 @@
 
 LDAP *ldap;
 
+/**
+ * Main routine for the ldap function, should when 
+ * queried handle all ldap searches and return 
+ * patterns. 
+ */
+void
+module_routine() { 
+
+}
+
 int
 module_init( irc_session_t *session ) { 
     syslog(LOG_INFO, "LDAP Module initalizing"); 

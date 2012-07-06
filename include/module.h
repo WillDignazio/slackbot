@@ -21,6 +21,7 @@
 
 static int module_init( irc_session_t *session ); 
 static int module_exit(); 
+static void module_routine(); 
 
 #endif
 
