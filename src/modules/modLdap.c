@@ -17,13 +17,18 @@
  */
 
 /**
- * @ingroup slackbot
- * @file handlers.c
- * @author William Dignazio <slackwill@csh.rit.edu>
+ * @ingroup slackbot_modules
+ * @author: Will Dignazio 
  */
 
+#include <stdio.h>
 #include <stddef.h> 
-#include <syslog.h>
+#include <stdarg.h> 
+#include <stdlib.h>
+#include <string.h> 
+#include <syslog.h> 
+#include <unistd.h>
+#include <argp.h>
 
 #include <libircclient.h>
 #include <libirc_errors.h>
@@ -33,27 +38,11 @@
 
 #include <slackbot.h> 
 
-void
-slack_handler_connect(
-        irc_session_t *session, 
-        const char *event, 
-        const char *origin, 
-        const char **params, 
-        unsigned int count) { 
-    syslog(LOG_INFO, "Connecting To IRC Server");
-    irc_ctx_t *ctx = (irc_ctx_t *)irc_get_ctx(session); 
-    irc_cmd_join(session, ctx->channel, NULL);
-    //TODO: Add password handling from ctx object 
-}
+#include <ldap.h>
 
-
-void 
-slack_handler_join(
-        irc_session_t *session, 
-        const char *event, 
-        const char *origin, 
-        const char **params, 
-        unsigned int count) { 
-    irc_ctx_t *ctx = (irc_ctx_t *)irc_get_ctx(session); 
-    syslog(LOG_INFO, "Connected to channel %s", ctx->channel);
+int
+module_init( irc_session_t *session ) { 
+    syslog(LOG_INFO, "LDAP Module initalizing"); 
+    //TODO: add ldap module handling logic 
+    return 0; 
 }

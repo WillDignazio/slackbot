@@ -9,6 +9,8 @@ struct arguments {
     char *name; 
     char *channel;
     int port; 
+    char *ldap_host; 
+    int ldap_port;
 };
 
 

@@ -41,7 +41,7 @@
 #include <slackbot.h> 
 
 char DEBUG = 0; 
-char NO_SSL = 0; 
+char NO_VERIFY = 0; 
 
 const char *argp_program_version = "slackbot v0.1.0";
 const char *argp_program_bug_address = "<slackwill@csh.rit.edu>"; 
@@ -59,6 +59,8 @@ static struct argp_option options[] = {
     {"name", 'N', "NAME", 0, "Real name, preferably starter of bot"},
     {"channel", 'c', "CHANNEL", 0, "Initial channel to join"}, 
     {"ssl_no_verify", 'X', 0, 0, "No verification for SSL"}, 
+    {"ldap_host", 'H', "LDAP_HOST", 0, "Host of ldap server"}, 
+    {"ldap_port", 'P', "LDAP_PORT", 0, "Specify ldap port"}, 
     { 0 } //Terminating Option
 }; 
 
@@ -69,7 +71,9 @@ static char args_doc[] =
 "nick: nickname of the slackbot in channel.\n"
 "user: username of the starter of the bot, default is None.\n" 
 "channel: channel to initially join, default is slackbot.\n"
-"ssl_no_verify: takes no arguments, disables ssl verification.\n";
+"ssl_no_verify: takes no arguments, disables ssl verification.\n"
+"ldap_host: address of the ldap server to connect to.\n"
+"ldap_port: port of the ldap server to connet to.\n";
 
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state) { 
@@ -102,8 +106,12 @@ parse_opt (int key, char *arg, struct argp_state *state) {
             arguments->channel = arg;
             break;
         case 'X': 
-            NO_SSL = 1;
+            NO_VERIFY = 1;
             break;
+        case 'H': 
+            arguments->ldap_host = arg; 
+        case 'P': 
+            arguments->ldap_port = atoi(arg); 
 
         case ARGP_KEY_ARG: 
             if(state->arg_num >= 0)  //increment/decrement based on args
@@ -136,6 +144,8 @@ main(int argc, char *argv[]) {
     arguments.user = "None";
     arguments.name = "slackbot";
     arguments.channel = "#slackbot";
+    arguments.ldap_host = "localhost"; 
+    arguments.ldap_port = 389;
 
     irc_callbacks_t callbacks;
     irc_session_t *session; 
@@ -155,7 +165,7 @@ main(int argc, char *argv[]) {
     syslog(LOG_MAKEPRI(LOG_LOCAL1, LOG_NOTICE), "Slackbot started "
         "by User %d", getuid()); 
 
-        
+    
     //clear the callbacks just in case 
     memset(&callbacks, 0, sizeof(callbacks)); 
     
@@ -178,7 +188,7 @@ main(int argc, char *argv[]) {
         irc_option_set(session, LIBIRC_OPTION_DEBUG); 
         syslog(LOG_INFO, "Enabled Debug Output"); 
     }
-    if(NO_SSL) { 
+    if(NO_VERIFY) { 
         irc_option_set(session, LIBIRC_OPTION_SSL_NO_VERIFY); 
         syslog(LOG_INFO, "Disabled SSL verification"); 
     }
