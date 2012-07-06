@@ -17,31 +17,33 @@
  */
 
 /**
- * @ingroup slackbot_modules
- * @author: Will Dignazio 
+ * @ingroup slackbot
+ * @file module.c
+ * @author William Dignazio <slackwill@csh.rit.edu>
  */
-
-#include <stdio.h>
 #include <stddef.h> 
-#include <stdarg.h> 
-#include <stdlib.h>
-#include <string.h> 
-#include <syslog.h> 
-#include <unistd.h>
-#include <argp.h>
+#include <syslog.h>
 
-#include <module.h>
-#include <slackbot.h> 
+#include <libircclient.h>
+#include <libirc_errors.h>
+#include <libirc_events.h>
+#include <libirc_options.h>
+#include <libirc_rfcnumeric.h>
 
-LDAP *ldap;
+#include <slackbot.h>
 
-int
-module_init( irc_session_t *session ) { 
-    syslog(LOG_INFO, "LDAP Module initalizing"); 
-    //TODO: add ldap module handling logic 
+/**
+ * Loads all the modules specified. If a new module is
+ * added, it needs to be either put in via a function 
+ * call, or loaded in automatically with this function.
+ */
+int 
+load_modules() { 
+    /*TODO: Implement */
     return 0; 
 }
 
-int module_exit() { 
+int 
+module_insert( module_t *module ) { 
     return 0; 
 }

@@ -9,10 +9,14 @@ all: link
 
 link: build
 	$(CC) -o slackbot src/slackbot.o src/handlers.o src/modules/modLdap.o -L./libircclient-1.6/src -lircclient -lpthread -lnsl -lssl -lcrypto -lldap
-build:
+
+build: modules 
 	$(CC) $(CFLAGS) -c -o src/slackbot.o ./src/slackbot.c
 	$(CC) $(CFLAGS) -c -o src/handlers.o ./src/handlers.c
-	$(CC) $(CFLAGS) -c -o src/modules/modLdap.o ./src/modules/modLdap.c
+	$(CC) $(CFLAGS) -c -o src/module.o ./src/module.c
+
+modules: 
+	$(CC) $(CFLAGS) -c -o src/modules/modLdap.o ./src/modules/modLdap.c -D_LDAP
 
 clean: 
 	rm -f ./slackbot
