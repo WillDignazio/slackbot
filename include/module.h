@@ -18,10 +18,14 @@
 #include <libirc_events.h>
 #include <libirc_options.h>
 #include <libirc_rfcnumeric.h>
+#include <slackbot.h>
 
-static int module_init( irc_session_t *session ); 
-static int module_exit(); 
-static void module_routine(); 
+#define MODULE_OK 0
+#define MODULE_INIT_FAIL 1 
+#define MODULE_EXIT_FAIL 2
+
+static int module_init(arguments *arg); 
+static int module_cleanup(); 
 
 #endif
 

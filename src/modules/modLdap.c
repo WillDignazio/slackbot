@@ -30,28 +30,40 @@
 #include <unistd.h>
 #include <argp.h>
 
+#include <ldap.h>
+
 #include <module.h>
 #include <slackbot.h> 
 
 LDAP *ldap;
 
-/**
- * Main routine for the ldap function, should when 
- * queried handle all ldap searches and return 
- * patterns. 
+/** 
+ * Initializes ldap module, not explicitly 
+ * required, just used to standardize future modules. 
  */
-void
-module_routine() { 
-
-}
-
 int
-module_init( irc_session_t *session ) { 
+module_init( arguments *args ) { 
     syslog(LOG_INFO, "LDAP Module initalizing"); 
-    //TODO: add ldap module handling logic 
-    return 0; 
+    ldap = ldap_init(args->ldap_host, args->ldap_port); 
+    return MODULE_OK; 
 }
 
-int module_exit() { 
-    return 0; 
+/**
+ * Same deal, not explicitly required, just used to 
+ * make standared modules for easy cleanup.
+ */
+int 
+module_cleanup() { 
+    return MODULE_OK; 
+}
+
+/** 
+ * While in this case it is redundant, if later on there 
+ * are modules that have constantly running routines, they 
+ * will need a better way to be started. 
+ */
+int 
+load_ldap_module( arguments *args ) { 
+    module_init(args); 
+    return MODULE_OK;
 }

@@ -77,7 +77,7 @@ static char args_doc[] =
 
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state) { 
-    struct arguments *arguments = state->input; 
+    arguments *arguments = state->input; 
 
     switch(key) { 
         /* Handle any character options here seperately. 

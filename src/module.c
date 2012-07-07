@@ -38,12 +38,7 @@
  * call, or loaded in automatically with this function.
  */
 int 
-load_modules() { 
-    /*TODO: Implement */
-    return 0; 
-}
+load_all_modules() { 
 
-int 
-module_insert( module_t *module ) { 
     return 0; 
 }

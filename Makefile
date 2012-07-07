@@ -16,7 +16,7 @@ build: modules
 	$(CC) $(CFLAGS) -c -o src/module.o ./src/module.c
 
 modules: 
-	$(CC) $(CFLAGS) -c -o src/modules/modLdap.o ./src/modules/modLdap.c -D_LDAP
+	$(CC) $(CFLAGS) -c -o src/modules/modLdap.o ./src/modules/modLdap.c
 
 clean: 
 	rm -f ./slackbot
