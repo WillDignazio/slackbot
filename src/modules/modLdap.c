@@ -44,7 +44,9 @@ LDAP *ldap;
 int
 module_init( arguments *args ) { 
     syslog(LOG_INFO, "LDAP Module initalizing"); 
-    ldap = ldap_init(args->ldap_host, args->ldap_port); 
+    char buf[100];//oh god I'm lazy I know, TODO: fix
+    sprintf(buf, "%s:%d", args->ldap_host, args->ldap_port); 
+    ldap_initialize(&ldap, buf);
     return MODULE_OK; 
 }
 
