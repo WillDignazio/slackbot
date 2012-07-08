@@ -22,13 +22,8 @@
  */
 
 #include <stdio.h>
-#include <stddef.h> 
-#include <stdarg.h> 
-#include <stdlib.h>
 #include <string.h> 
 #include <syslog.h> 
-#include <unistd.h>
-#include <argp.h>
 
 #include <ldap.h>
 

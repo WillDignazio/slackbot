@@ -9,4 +9,5 @@ Required Packages
 - openldap
 - openssl 
 - libircclient 
+- libconfig 
 - CUnit
