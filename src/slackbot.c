@@ -42,8 +42,8 @@
 
 #include <slackbot.h> 
 
-char DEBUG = 0; 
-char NO_VERIFY = 0; 
+int DEBUG = 0; 
+int NO_VERIFY = 0; 
 
 config_t config;
 
@@ -156,10 +156,7 @@ main(int argc, char *argv[]) {
     irc_session_t *session; 
     irc_ctx_t ctx;  
 
-    /* Argurment parse constants defined in the 
-       slackbot.h header. */
-    argp_parse(&argp, argc, argv, 0, 0, &arguments); 
-
+    
     /** 
      * slackbot will display all of its logging 
      * in the syslog file, //TODO: implement a verbose
@@ -182,13 +179,27 @@ main(int argc, char *argv[]) {
         if(config_read_file(&config, "slackbot.cfg") != CONFIG_TRUE)
             printf("failed to parse configuration\n");
     }
-    
+   
+    config_lookup_string(&config, "host", &arguments.host);
+    syslog(LOG_INFO, "Configuration Parsed IRC host %s", arguments.host); 
+    config_lookup_int(&config, "port", &arguments.port);
+    syslog(LOG_INFO, "Configuration Parsed IRC port %d", arguments.port); 
+    config_lookup_bool(&config, "ssl_no_verify", &NO_VERIFY);
+    syslog(LOG_INFO, "Configuration Parsed SSL Options %s", NO_VERIFY ? 
+            "No SSL verication" : "Verify SSL"); 
+
+    /* Argurment parse constants defined in the 
+       slackbot.h header. 
+       They take precedence over all the others. */
+    argp_parse(&argp, argc, argv, 0, 0, &arguments); 
+
     /* Load all the modules of the program */ 
     load_all_modules(&arguments);
 
     //clear the callbacks just in case 
     memset(&callbacks, 0, sizeof(callbacks)); 
-    
+   
+    /* Insert all the callback events here */
     callbacks.event_connect = slack_handler_connect; 
     callbacks.event_join = slack_handler_join; 
 
@@ -213,10 +224,18 @@ main(int argc, char *argv[]) {
         syslog(LOG_INFO, "Disabled SSL verification"); 
     }
 
+    syslog(LOG_INFO, "Connecting with: "); 
+    syslog(LOG_INFO, "Host: %s", arguments.host); 
+    syslog(LOG_INFO, "Port: %d", arguments.port);
+    syslog(LOG_INFO, "Nick: %s", arguments.nick); 
+    syslog(LOG_INFO, "User: %s", arguments.user); 
+    syslog(LOG_INFO, "Name: %s", arguments.name);
+    syslog(LOG_INFO, "Channel: %s", arguments.channel);
+
     /* Uses the arguments given with argp, addend new ones 
      * to the options and arguments struct, and add handlers 
      * to the option parse function, and */
-    irc_connect(
+    int status = irc_connect(
             session, 
             arguments.host,
             arguments.port, 
@@ -224,6 +243,7 @@ main(int argc, char *argv[]) {
             arguments.nick, 
             arguments.user, 
             arguments.name); 
+    printf("Slackbot status: %d\n", status); 
 
     if(irc_is_connected(session)) { 
         printf("Connected\n"); 
