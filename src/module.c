@@ -38,7 +38,10 @@
  * call, or loaded in automatically with this function.
  */
 int 
-load_all_modules() { 
+load_all_modules( arguments *args ) { 
+
+    /*Load LDAP module*/
+    load_ldap_module(args);  
 
     return 0; 
 }

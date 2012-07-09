@@ -26,11 +26,17 @@
 #include <syslog.h> 
 
 #include <ldap.h>
+#include <libconfig.h>
 
 #include <module.h>
 #include <slackbot.h> 
 
 LDAP *ldap;
+const char *uri;
+const char *basedn;
+const char *password;
+
+
 
 /** 
  * Initializes ldap module, not explicitly 
@@ -39,9 +45,16 @@ LDAP *ldap;
 int
 module_init( arguments *args ) { 
     syslog(LOG_INFO, "LDAP Module initalizing"); 
-    char buf[100];//oh god I'm lazy I know, TODO: fix
-    sprintf(buf, "%s:%d", args->ldap_host, args->ldap_port); 
-    ldap_initialize(&ldap, buf);
+    
+    config_lookup_string(&config, "ldap.uri", &uri);
+    config_lookup_string(&config, "ldap.binddn", &basedn); 
+    config_lookup_string(&config, "ldap.password", &password);
+
+    syslog(LOG_INFO, "Initializing LDAP Connection...%s\n", 
+        ldap_err2string(ldap_initialize(&ldap, uri)));
+    syslog(LOG_INFO, "Binding to URI...%s\n", 
+        ldap_err2string(ldap_simple_bind_s(ldap, basedn, password)));
+
     return MODULE_OK; 
 }
 

@@ -32,6 +32,8 @@
 #include <unistd.h>
 #include <argp.h>
 
+#include <libconfig.h>
+
 #include <libircclient.h>
 #include <libirc_errors.h>
 #include <libirc_events.h>
@@ -42,6 +44,8 @@
 
 char DEBUG = 0; 
 char NO_VERIFY = 0; 
+
+config_t config;
 
 const char *argp_program_version = "slackbot v0.1.0";
 const char *argp_program_bug_address = "<slackwill@csh.rit.edu>"; 
@@ -114,14 +118,14 @@ parse_opt (int key, char *arg, struct argp_state *state) {
             arguments->ldap_port = atoi(arg); 
 
         case ARGP_KEY_ARG: 
-            if(state->arg_num >= 0)  //increment/decrement based on args
+            if((int)(state->arg_num) >= 0)  //increment/decrement based on args
                 /* Too many arguments */
                 argp_usage(state); 
             arguments->args[state->arg_num] = arg; 
             break; 
 
         case ARGP_KEY_END: 
-            if (state->arg_num < 0) //increment/decrement based on required args
+            if ((int)(state->arg_num) < 0) //increment/decrement based on required args
                 /* Not enough arguments */
                 argp_usage(state); 
             break; 
@@ -146,6 +150,7 @@ main(int argc, char *argv[]) {
     arguments.channel = "#slackbot";
     arguments.ldap_host = "localhost"; 
     arguments.ldap_port = 389;
+    arguments.config = "~/.config/slackbot.cfg";
 
     irc_callbacks_t callbacks;
     irc_session_t *session; 
@@ -165,7 +170,22 @@ main(int argc, char *argv[]) {
     syslog(LOG_MAKEPRI(LOG_LOCAL1, LOG_NOTICE), "Slackbot started "
         "by User %d", getuid()); 
 
+
+    /* Load Configuration File, takes preference over the 
+     * default configurations given 
+     */
+    syslog(LOG_INFO, "Parsing configuration"); 
+    if(arguments.config) { 
+        syslog(LOG_INFO, "Reading configuration from %s\n",
+            arguments.config); 
+        config_init(&config); 
+        if(config_read_file(&config, "slackbot.cfg") != CONFIG_TRUE)
+            printf("failed to parse configuration\n");
+    }
     
+    /* Load all the modules of the program */ 
+    load_all_modules(&arguments);
+
     //clear the callbacks just in case 
     memset(&callbacks, 0, sizeof(callbacks)); 
     
