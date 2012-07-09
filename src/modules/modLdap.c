@@ -33,7 +33,7 @@
 
 LDAP *ldap;
 const char *uri;
-const char *basedn;
+const char *basedn, *binddn;
 const char *password;
 
 
@@ -47,13 +47,16 @@ module_init( arguments *args ) {
     syslog(LOG_INFO, "LDAP Module initalizing"); 
     
     config_lookup_string(&config, "ldap.uri", &uri);
-    config_lookup_string(&config, "ldap.binddn", &basedn); 
+    syslog(LOG_INFO, "LDAP URI: %s\n", uri); 
+    config_lookup_string(&config, "ldap.binddn", &binddn); 
+    syslog(LOG_INFO, "LDAP BINDDN: %s\n", binddn); 
     config_lookup_string(&config, "ldap.password", &password);
+    syslog(LOG_INFO, "LDAP PASSWORD: %s\n", password); 
 
     syslog(LOG_INFO, "Initializing LDAP Connection...%s\n", 
         ldap_err2string(ldap_initialize(&ldap, uri)));
     syslog(LOG_INFO, "Binding to URI...%s\n", 
-        ldap_err2string(ldap_simple_bind_s(ldap, basedn, password)));
+        ldap_err2string(ldap_simple_bind_s(ldap, binddn, password)));
 
     return MODULE_OK; 
 }
