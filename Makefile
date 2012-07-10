@@ -18,6 +18,13 @@ build: modules
 modules: 
 	$(CC) $(CFLAGS) -c -o src/modules/modLdap.o ./src/modules/modLdap.c
 
+libircclient: 
+	wget --progress=dot "http://downloads.sourceforge.net/project/libircclient/libircclient/1.6/libircclient-1.6.tar.gz?r=http%3A%2F%2Fsourceforge.net%2Fprojects%2Flibircclient%2F&ts=1341897650&use_mirror=hivelocity" -O libircclient-1.6.tar.gz
+	tar -zxvf ./libircclient-1.6.tar.gz
+	cd libircclient-1.6; \
+		./configure --enable-openssl --enable-ipv6; \
+		make
+
 clean: 
 	rm -f ./slackbot
 	rm -f ./src/*.o
