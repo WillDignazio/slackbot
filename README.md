@@ -11,3 +11,5 @@ Required Packages
 - libircclient 
 - libconfig 
 - CUnit
+
+* libircclient can be downloaded and installed by running make libircclient
