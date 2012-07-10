@@ -1,2 +1,6 @@
 libircclient-1.6/*
 libircclient
+*.o
+src/*.o
+src/modules/*.o
+slackbot.cfg
