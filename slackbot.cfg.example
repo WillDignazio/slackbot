@@ -1,5 +1,4 @@
 #Slackbot Configuration File
-#WARNING: DO NOT PUSH
 
 version = "0.0.1"; 
 host="localhost"; #localhost for SSL
