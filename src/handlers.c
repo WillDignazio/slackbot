@@ -55,5 +55,9 @@ slack_handler_join(
         const char **params, 
         unsigned int count) { 
     irc_ctx_t *ctx = (irc_ctx_t *)irc_get_ctx(session); 
-    syslog(LOG_INFO, "Connected to channel %s", ctx->channel);
+    syslog(LOG_INFO, "%s connected to channel %s", origin, ctx->channel);
+    const char *msg = "Good news everyone! %s has joined the channel!"; 
+    char buf[strlen(msg) + strlen(origin)];
+    sprintf(buf, msg, origin); 
+    irc_cmd_msg(session, ctx->channel, buf); 
 }

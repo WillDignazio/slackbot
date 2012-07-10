@@ -37,7 +37,6 @@ const char *basedn, *binddn;
 const char *password;
 
 
-
 /** 
  * Initializes ldap module, not explicitly 
  * required, just used to standardize future modules. 
@@ -57,6 +56,7 @@ module_init( arguments *args ) {
         ldap_err2string(ldap_initialize(&ldap, uri)));
     syslog(LOG_INFO, "Binding to URI...%s\n", 
         ldap_err2string(ldap_simple_bind_s(ldap, binddn, password)));
+
 
     return MODULE_OK; 
 }
