@@ -173,7 +173,7 @@ main(int argc, char *argv[]) {
             printf("failed to parse configuration\n");
     }
    
-    if(config_lookup_string(&config, "host", (const char **)arguments.host))
+    if(config_lookup_string(&config, "host", (const char **)&arguments.host))
         syslog(LOG_INFO, "Configuration parsed IRC host %s", arguments.host); 
     if(config_lookup_int(&config, "port", &arguments.port))
         syslog(LOG_INFO, "Configuration parsed IRC port %d", arguments.port); 
