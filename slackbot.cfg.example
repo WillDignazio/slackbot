@@ -10,5 +10,22 @@ ldap:
     uri="ldap://localhost:389/"; #LDAP resource uri
     password="foo"; #LDAP Binddn password
     binddn="uid=<username>,ou=<group>,dc=<foo>,dc=<bar>,dc=<com>"; 
-    basedn="ou=<group>,dc=<foo>,dc=<bar>,dc=<com>";
+
+    queries = ("search1", "search2"); 
+
+    query: 
+    { 
+        search1: 
+        { 
+            basedn="cn=<group>,dc=foo,dc=com"; 
+            filter="(uid=foo)"; 
+            event="+v"; 
+        };
+        search2: 
+        { 
+            basedn="cn=<redteam>,dc=foo,dc=com"; 
+            filter="(uid=bar)": 
+            event="-v"; 
+        };
+    };
 }; 
