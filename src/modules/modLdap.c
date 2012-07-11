@@ -37,9 +37,9 @@ const char *basedn, *binddn;
 const char *password;
 
 struct ldap_query_t { 
-    char *basedn; 
-    char *filter; 
-    char *event; 
+    char *basednstr; 
+    char *filterstr; 
+    char *eventstr; 
     struct ldap_query_t *next; 
 };
 
@@ -47,7 +47,7 @@ struct ldap_query_t
 build_query_tree() { 
     syslog(LOG_INFO, "Building query event tree..."); 
     static struct ldap_query_t head; 
-    struct ldap_query_t *next; 
+    struct ldap_query_t *tail = &head; 
     config_setting_t *setting = config_lookup(&config, "ldap.queries"); 
     int i = 0; 
     do { /* The caveat, and requirement, is that there be at least
@@ -60,11 +60,36 @@ build_query_tree() {
             sprintf(query_param, "ldap.query.%s", query);
             syslog(LOG_INFO, "Parsed LDAP query %s", query_param); 
             syslog(LOG_INFO, "Building LDAP query node..."); 
-            //TODO: Build it. 
+
+            /* Each of the string must have a +1 for dot operator */
+            char basednstr[strlen(query_param) + 8]; //length of 'basedn'
+            sprintf(basednstr, "%s.%s", query_param, "basedn"); 
+            syslog(LOG_INFO, "Parsing %s", basednstr); 
+            char filterstr[strlen(query_param) + 6]; //length of 'filter'
+            sprintf(filterstr, "%s.%s", query_param, "filter"); 
+            syslog(LOG_INFO, "Parsing %s", filterstr); 
+            char eventstr[strlen(query_param) + 5]; //length of 'event'
+            sprintf(eventstr, "%s.%s", query_param, "event"); 
+            syslog(LOG_INFO, "Parsing %s", eventstr); 
+
+            syslog(LOG_INFO, "Building query node..."); 
+            config_lookup_string(&config, basednstr, &(tail->basednstr)); 
+            config_lookup_string(&config, filterstr, &(tail->filterstr)); 
+            config_lookup_string(&config, eventstr, &(tail->eventstr)); 
+            tail->next = malloc(sizeof(struct ldap_query_t));
+
+            syslog(LOG_INFO, "Success, New Node:"); 
+            syslog(LOG_INFO, "--->basedn = %s", tail->basednstr); 
+            syslog(LOG_INFO, "--->filter = %s", tail->filterstr); 
+            syslog(LOG_INFO, "--->event = %s", tail->eventstr); 
+            /* Move onto the next node */ 
+            tail = tail->next; 
+
             i++;
         } else { 
             syslog(LOG_INFO, "Parsed all ldap queries.");
             i = -1; 
+            tail->next = NULL;
         } 
     } while(i != -1);
 
