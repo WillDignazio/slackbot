@@ -46,24 +46,29 @@ struct ldap_query_t {
 struct ldap_query_t
 build_query_tree() { 
     syslog(LOG_INFO, "Building query event tree..."); 
-    static struct ldap_query_t q; 
+    static struct ldap_query_t head; 
+    struct ldap_query_t *next; 
     config_setting_t *setting = config_lookup(&config, "ldap.queries"); 
     int i = 0; 
     do { /* The caveat, and requirement, is that there be at least
             one ldap query parameter, otherwise you just shouldn't
             include the ldap module...*/
         char *query = config_setting_get_string_elem(setting, i);
-        char query_param[strlen("ldap.query") //GCC/clang will optimize
+        if(query != NULL) { 
+            char query_param[strlen("ldap.query") //GCC/clang will optimize
                 + strlen(query)+1]; // +1 for dot op
-        if(query) { sprintf(query_param, "", query_param); }
-        
-        syslog(LOG_INFO, query ? "Parsed LDAP query %s, formed %s" : 
-                "Parsed all queries.", query, query_param); 
-        i++;
-        if(query == NULL) { i = -1; } //the get string elem returns null at end.
+            sprintf(query_param, "ldap.query.%s", query);
+            syslog(LOG_INFO, "Parsed LDAP query %s", query_param); 
+            syslog(LOG_INFO, "Building LDAP query node..."); 
+            //TODO: Build it. 
+            i++;
+        } else { 
+            syslog(LOG_INFO, "Parsed all ldap queries.");
+            i = -1; 
+        } 
     } while(i != -1);
 
-    return q;
+    return head;
 }
 
 

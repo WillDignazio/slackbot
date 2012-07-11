@@ -183,6 +183,8 @@ main(int argc, char *argv[]) {
         syslog(LOG_INFO, "Configuration parsed IRC name %s", arguments.name); 
     if(config_lookup_string(&config, "nick", (const char **)&arguments.nick)) 
         syslog(LOG_INFO, "Configuration parsed IRC nick %s", arguments.nick); 
+    if(config_lookup_string(&config, "user", (const char **)&arguments.user))
+        syslog(LOG_INFO, "Configuration parsed IRC user %s", arguments.user); 
     if(config_lookup_bool(&config, "ssl_no_verify", &NO_VERIFY))
         syslog(LOG_INFO, "Configuration parsed SSL options %s", NO_VERIFY ? 
              "No SSL verication" : "Verify SSL"); 
