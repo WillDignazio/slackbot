@@ -24,12 +24,7 @@
 
 #include <stddef.h> 
 #include <syslog.h>
-
-#include <libircclient.h>
-#include <libirc_errors.h>
-#include <libirc_events.h>
-#include <libirc_options.h>
-#include <libirc_rfcnumeric.h>
+#include <string.h>
 
 #include <slackbot.h> 
 

@@ -32,14 +32,7 @@
 #include <unistd.h>
 #include <argp.h>
 
-#include <libconfig.h>
-
-#include <libircclient.h>
-#include <libirc_errors.h>
-#include <libirc_events.h>
-#include <libirc_options.h>
-#include <libirc_rfcnumeric.h>
-
+#include <modules.h>
 #include <slackbot.h> 
 
 int DEBUG = 0; 
@@ -180,13 +173,19 @@ main(int argc, char *argv[]) {
             printf("failed to parse configuration\n");
     }
    
-    config_lookup_string(&config, "host", &arguments.host);
-    syslog(LOG_INFO, "Configuration Parsed IRC host %s", arguments.host); 
-    config_lookup_int(&config, "port", &arguments.port);
-    syslog(LOG_INFO, "Configuration Parsed IRC port %d", arguments.port); 
-    config_lookup_bool(&config, "ssl_no_verify", &NO_VERIFY);
-    syslog(LOG_INFO, "Configuration Parsed SSL Options %s", NO_VERIFY ? 
-            "No SSL verication" : "Verify SSL"); 
+    if(config_lookup_string(&config, "host", (const char **)arguments.host))
+        syslog(LOG_INFO, "Configuration parsed IRC host %s", arguments.host); 
+    if(config_lookup_int(&config, "port", &arguments.port))
+        syslog(LOG_INFO, "Configuration parsed IRC port %d", arguments.port); 
+    if(config_lookup_string(&config, "channel", (const char **)&arguments.channel))
+        syslog(LOG_INFO, "Configuration parsed IRC channel %s", arguments.channel);
+    if(config_lookup_string(&config, "name", (const char **)&arguments.name))
+        syslog(LOG_INFO, "Configuration parsed IRC name %s", arguments.name); 
+    if(config_lookup_string(&config, "nick", (const char **)&arguments.nick)) 
+        syslog(LOG_INFO, "Configuration parsed IRC nick %s", arguments.nick); 
+    if(config_lookup_bool(&config, "ssl_no_verify", &NO_VERIFY))
+        syslog(LOG_INFO, "Configuration parsed SSL options %s", NO_VERIFY ? 
+             "No SSL verication" : "Verify SSL"); 
 
     /* Argurment parse constants defined in the 
        slackbot.h header. 

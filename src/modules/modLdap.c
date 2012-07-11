@@ -28,7 +28,7 @@
 #include <ldap.h>
 #include <libconfig.h>
 
-#include <module.h>
+#include <modules.h>
 #include <slackbot.h> 
 
 LDAP *ldap;
@@ -36,15 +36,14 @@ const char *uri;
 const char *basedn, *binddn;
 const char *password;
 
-
-/** 
- * Initializes ldap module, not explicitly 
- * required, just used to standardize future modules. 
+/**
+ * Load the ldap modules, passing in any arguments 
+ * given initially, which are to be used in the 
+ * ldap module. 
  */
-int
-module_init( arguments *args ) { 
+int 
+load_ldap_module( arguments *args ) { 
     syslog(LOG_INFO, "LDAP Module initalizing"); 
-    
     config_lookup_string(&config, "ldap.uri", &uri);
     syslog(LOG_INFO, "LDAP URI: %s\n", uri); 
     config_lookup_string(&config, "ldap.binddn", &binddn); 
@@ -57,26 +56,5 @@ module_init( arguments *args ) {
     syslog(LOG_INFO, "Binding to URI...%s\n", 
         ldap_err2string(ldap_simple_bind_s(ldap, binddn, password)));
 
-
-    return MODULE_OK; 
-}
-
-/**
- * Same deal, not explicitly required, just used to 
- * make standared modules for easy cleanup.
- */
-int 
-module_cleanup() { 
-    return MODULE_OK; 
-}
-
-/** 
- * While in this case it is redundant, if later on there 
- * are modules that have constantly running routines, they 
- * will need a better way to be started. 
- */
-int 
-load_ldap_module( arguments *args ) { 
-    module_init(args); 
-    return MODULE_OK;
+    return 0;
 }

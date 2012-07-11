@@ -1,6 +1,12 @@
 #ifndef SLACKBOT_GAURD_H 
 #define SLACKBOT_GAURD_H 
 
+#include <libircclient.h>
+#include <libirc_errors.h>
+#include <libirc_events.h>
+#include <libirc_options.h>
+#include <libirc_rfcnumeric.h>
+
 #include <libconfig.h> 
 
 extern config_t config;
