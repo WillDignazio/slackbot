@@ -43,6 +43,15 @@ struct ldap_query_t {
     struct ldap_query_t *next; 
 };
 
+/**
+ * Parses the configuration file, specifically the 
+ * ldap section. This function will produce a tree, 
+ * or really a linked list, tree sounds cooler, of 
+ * ldap_query_t structures. This will allow a series 
+ * of events to happen sequentially just by adding a
+ * few lines to the configuration file. The returned 
+ * node is the head of the tree/list.
+ */
 struct ldap_query_t
 build_query_tree() { 
     syslog(LOG_INFO, "Building query event tree..."); 
@@ -78,6 +87,10 @@ build_query_tree() {
             config_lookup_string(&config, eventstr, &(tail->eventstr)); 
             tail->next = malloc(sizeof(struct ldap_query_t));
 
+            /* By this point the new node, TODO: write a failure method 
+             * if we don't make it to this point. I beleive the only 
+             * alternative to correct configuration is segfault :(
+             */
             syslog(LOG_INFO, "Success, New Node:"); 
             syslog(LOG_INFO, "--->basedn = %s", tail->basednstr); 
             syslog(LOG_INFO, "--->filter = %s", tail->filterstr); 
@@ -96,6 +109,19 @@ build_query_tree() {
     return head;
 }
 
+/**
+ * Debug function meant to display the query tree 
+ * onto a log file or syslog. 
+ */
+void
+log_query_tree(struct ldap_query_t *node) { 
+    if(node->next != NULL) { 
+        syslog(LOG_INFO, "/--NODE: %s, %s, %s", 
+            node->basednstr, node->filterstr, node->eventstr); 
+        return log_query_tree(node->next); 
+    }
+} 
+    
 
 /**
  * Load the ldap modules, passing in any arguments 
@@ -118,7 +144,8 @@ load_ldap_module( arguments *args ) {
         ldap_err2string(ldap_simple_bind_s(ldap, binddn, password)));
 
     syslog(LOG_INFO, "Building LDAP query tree..."); 
-    build_query_tree(); 
+    struct ldap_query_t query = build_query_tree(); 
+    log_query_tree(&query);  
 
     return 0;
 }
