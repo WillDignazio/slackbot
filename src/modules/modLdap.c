@@ -31,17 +31,37 @@
 #include <modules.h>
 #include <slackbot.h> 
 
+struct ldap_query_t { 
+    char *basednstr; 
+    char *filterstr; 
+    char *eventstr; // Not an actual event type
+    struct ldap_query_t *next; 
+};
+
+struct timeval timeout;
+
 LDAP *ldap;
 const char *uri;
 const char *basedn, *binddn;
 const char *password;
+struct ldap_query_t head; 
 
-struct ldap_query_t { 
-    char *basednstr; 
-    char *filterstr; 
-    char *eventstr; 
-    struct ldap_query_t *next; 
-};
+void set_query_filter(struct ldap_query_t *t, const char *qval) { 
+    char newfilter[strlen(t->filterstr) + strlen(qval)]; 
+    sprintf(newfilter, t->filterstr, qval); 
+    t->filterstr = newfilter; 
+}
+
+
+void
+slack_ldap_search(const char *qval) { 
+    LDAPMessage *results; 
+    int status = ldap_search_ext_s(
+            ldap, head.basednstr, LDAP_SCOPE_SUBTREE, head.filterstr, NULL, 
+            0, NULL, NULL, &timeout, 1, &results);
+} 
+             
+
 
 /**
  * Parses the configuration file, specifically the 
@@ -62,7 +82,7 @@ build_query_tree() {
     do { /* The caveat, and requirement, is that there be at least
             one ldap query parameter, otherwise you just shouldn't
             include the ldap module...*/
-        char *query = config_setting_get_string_elem(setting, i);
+        const char *query = config_setting_get_string_elem(setting, i);
         if(query != NULL) { 
             char query_param[strlen("ldap.query") //GCC/clang will optimize
                 + strlen(query)+1]; // +1 for dot op
@@ -82,9 +102,12 @@ build_query_tree() {
             syslog(LOG_INFO, "Parsing %s", eventstr); 
 
             syslog(LOG_INFO, "Building query node..."); 
-            config_lookup_string(&config, basednstr, &(tail->basednstr)); 
-            config_lookup_string(&config, filterstr, &(tail->filterstr)); 
-            config_lookup_string(&config, eventstr, &(tail->eventstr)); 
+            config_lookup_string(&config, basednstr, 
+                    (const char **)&(tail->basednstr)); 
+            config_lookup_string(&config, filterstr, 
+                    (const char **)&(tail->filterstr)); 
+            config_lookup_string(&config, eventstr, 
+                    (const char **)&(tail->eventstr)); 
             tail->next = malloc(sizeof(struct ldap_query_t));
 
             /* By this point the new node, TODO: write a failure method 
@@ -144,8 +167,13 @@ load_ldap_module( arguments *args ) {
         ldap_err2string(ldap_simple_bind_s(ldap, binddn, password)));
 
     syslog(LOG_INFO, "Building LDAP query tree..."); 
-    struct ldap_query_t query = build_query_tree(); 
-    log_query_tree(&query);  
+    head = build_query_tree(); 
+    log_query_tree(&head);  
+
+    timeout.tv_sec = 10; 
+    timeout.tv_usec = 0; 
+
+    slack_ldap_search("slackwill"); 
 
     return 0;
 }
