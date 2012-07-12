@@ -57,11 +57,16 @@ void
 slack_ldap_search(const char *qval) { 
     LDAPMessage *result; 
     syslog(LOG_INFO, "Performing ldap search for %s", qval); 
+    
+    set_query_filter(&head, qval); 
+    syslog(LOG_INFO, "Query Filter: %s", head.filterstr);  
+
     int search_status = ldap_search_ext_s(
             ldap, head.basednstr, LDAP_SCOPE_SUBTREE, head.filterstr, NULL, 
             0, NULL, NULL, &timeout, 1, &result);
     syslog(LOG_INFO, "Search Status: %s", ldap_err2string(search_status));
-    
+    if(search_status != LDAP_SUCCESS) { return; } // We should probably die 
+
     syslog(LOG_INFO, "Parsing ldap search result"); 
     
     int errcodep; //result code from the result message
@@ -86,7 +91,7 @@ slack_ldap_search(const char *qval) {
 
     syslog(LOG_INFO, "Parse status: %s", ldap_err2string(parse_status)); 
     syslog(LOG_INFO, "Error (if any): %s", errmsgp ? errmsgp : "None"); 
-
+    
     /* The messages are dynamically generated, so they must
      * be manually freed or they just memleak all over the
      * place. LDAP libraries FTW. */
