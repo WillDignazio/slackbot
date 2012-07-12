@@ -55,10 +55,46 @@ void set_query_filter(struct ldap_query_t *t, const char *qval) {
 
 void
 slack_ldap_search(const char *qval) { 
-    LDAPMessage *results; 
-    int status = ldap_search_ext_s(
+    LDAPMessage *result; 
+    syslog(LOG_INFO, "Performing ldap search for %s", qval); 
+    int search_status = ldap_search_ext_s(
             ldap, head.basednstr, LDAP_SCOPE_SUBTREE, head.filterstr, NULL, 
-            0, NULL, NULL, &timeout, 1, &results);
+            0, NULL, NULL, &timeout, 1, &result);
+    syslog(LOG_INFO, "Search Status: %s", ldap_err2string(search_status));
+    
+    syslog(LOG_INFO, "Parsing ldap search result"); 
+    
+    int errcodep; //result code from the result message
+    /* The server might supply a matched DN string in the message 
+     * indicating how much of a name in a request was recognized. 
+     * The matcheddnp parameter will be filled in with this string 
+     * if supplied, else it will be NULL. If a string is returned, 
+     * it should be freed useing ldap_memfree(); 
+     */
+    char *matcheddnp;
+    /* Same deal as matcheddnp, filled with error message field 
+     * from the parsed message. Should be freed with ldap_memfree
+     */
+    char *errmsgp;
+    /* Array of referral string from the parsed message. */ 
+    char **referralsp; 
+    /* Array of controls copied from the parsed message. */ 
+    LDAPControl **serverctrlsp; 
+
+    int parse_status = ldap_parse_result(ldap, result, &errcodep, &matcheddnp,
+            &errmsgp, &referralsp, &serverctrlsp, 0/*We manually free it*/);
+
+    syslog(LOG_INFO, "Parse status: %s", ldap_err2string(parse_status)); 
+    syslog(LOG_INFO, "Error (if any): %s", errmsgp ? errmsgp : "None"); 
+
+    /* The messages are dynamically generated, so they must
+     * be manually freed or they just memleak all over the
+     * place. LDAP libraries FTW. */
+    ldap_memfree(matcheddnp); 
+    ldap_memfree(errmsgp); 
+    ldap_memvfree((void**)referralsp); 
+    ldap_controls_free(serverctrlsp); 
+    ldap_msgfree(result); 
 } 
              
 
