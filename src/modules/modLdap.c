@@ -45,6 +45,7 @@ const char *uri;
 const char *basedn, *binddn;
 const char *password;
 struct ldap_query_t head; 
+int version; 
 
 void set_query_filter(struct ldap_query_t *t, const char *qval) { 
     char newfilter[strlen(t->filterstr) + strlen(qval)]; 
@@ -60,9 +61,9 @@ slack_ldap_search(const char *qval) {
     
     set_query_filter(&head, qval); 
     syslog(LOG_INFO, "Query Filter: %s", head.filterstr);  
-
+    
     int search_status = ldap_search_ext_s(
-            ldap, head.basednstr, LDAP_SCOPE_SUBTREE, head.filterstr, NULL, 
+            ldap, head.basednstr, LDAP_SCOPE_SUBTREE, "(uid=slackwill)"/*head.filterstr)*/, NULL, 
             0, NULL, NULL, &timeout, 1, &result);
     syslog(LOG_INFO, "Search Status: %s", ldap_err2string(search_status));
     if(search_status != LDAP_SUCCESS) { return; } // We should probably die 
@@ -91,7 +92,8 @@ slack_ldap_search(const char *qval) {
 
     syslog(LOG_INFO, "Parse status: %s", ldap_err2string(parse_status)); 
     syslog(LOG_INFO, "Error (if any): %s", errmsgp ? errmsgp : "None"); 
-    
+   
+
     /* The messages are dynamically generated, so they must
      * be manually freed or they just memleak all over the
      * place. LDAP libraries FTW. */
@@ -194,7 +196,32 @@ log_query_tree(struct ldap_query_t *node) {
  */
 int 
 load_ldap_module( arguments *args ) { 
+
     syslog(LOG_INFO, "LDAP Module initalizing"); 
+    
+    /* Sets the protocol version based on ldap.version */
+    config_lookup_int(&config, "ldap.version", &version); 
+    switch(version) { 
+        case 1: 
+            ldap_set_option(ldap, LDAP_OPT_PROTOCOL_VERSION, &version);
+            syslog(LOG_INFO, "LDAP Protocol Version: 1"); 
+            break; 
+        case 2: 
+            ldap_set_option(ldap, LDAP_OPT_PROTOCOL_VERSION, &version);
+            syslog(LOG_INFO, "LDAP Protocol Version: 2"); 
+            break; 
+        case 3: 
+            ldap_set_option(ldap, LDAP_OPT_PROTOCOL_VERSION, &version);
+            syslog(LOG_INFO, "LDAP Protocol Version: 3");
+            break; 
+        default: 
+            version = 3;
+            ldap_set_option(ldap, LDAP_OPT_PROTOCOL_VERSION, &version);
+            syslog(LOG_INFO, "Invalid value, setting LDAP Protocol\
+                Version to 3"); 
+            break;
+    }
+
     config_lookup_string(&config, "ldap.uri", &uri);
     syslog(LOG_INFO, "LDAP URI: %s\n", uri); 
     config_lookup_string(&config, "ldap.binddn", &binddn); 
@@ -204,6 +231,7 @@ load_ldap_module( arguments *args ) {
 
     syslog(LOG_INFO, "Initializing LDAP Connection...%s\n", 
         ldap_err2string(ldap_initialize(&ldap, uri)));
+    
     syslog(LOG_INFO, "Binding to URI...%s\n", 
         ldap_err2string(ldap_simple_bind_s(ldap, binddn, password)));
 
