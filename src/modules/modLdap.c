@@ -72,23 +72,24 @@ slack_ldap_search(const char *qval) {
     int i;
     if(entry != NULL) { 
         syslog(LOG_INFO, "Found LDAP Entry..."); 
+        /* For each attribute of the entry that has been parsed */
         for(attribute = ldap_first_attribute(ldap, entry, &ber); 
-                attribute != NULL; 
+                attribute != NULL; // if NULL then we are at the end
                 attribute = ldap_next_attribute(ldap, entry, ber)) {
             /* For each attribute print the attribute name and values */ 
             if ((vals = ldap_get_values(ldap, entry, attribute)) != NULL) { 
                 for(i=0; vals[i] != NULL; i++) { 
                     syslog(LOG_INFO, "FOUND VALUE %s: %s", attribute, vals[i]); 
                 }
-                ldap_value_free(vals); 
+                ldap_value_free(vals); // MY 
             }
-            ldap_memfree(attribute); 
+            ldap_memfree(attribute); // GOD
         }
         if(ber != NULL) { 
-            ber_free(ber, 0); 
+            ber_free(ber, 0); // MEMLEAK
         }
     }
-    ldap_msgfree(result); 
+    ldap_msgfree(result); // AVERTED
 } 
              
 
