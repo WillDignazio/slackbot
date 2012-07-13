@@ -39,6 +39,7 @@ struct ldap_query_t {
     struct ldap_query_t *next; 
 };
 
+
 struct timeval timeout;
 
 LDAP *ldap;
@@ -48,7 +49,15 @@ const char *password;
 struct ldap_query_t head; 
 int version; 
 
-
+/** 
+ * Should be called on an event requiring an ldap search, 
+ * will return an slack_ldap_event_t struct. The event 
+ * struct will provide all the necessary information 
+ * and pointers to relevant information. The function 
+ * itself uses the ldap_query_t tree to make a series 
+ * of ldap searches to find out information about the 
+ * nick provided, or the lack of it. 
+ */
 void
 slack_ldap_search(const char *qval) { 
     LDAPMessage *result; 
