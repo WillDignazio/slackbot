@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <string.h> 
 #include <syslog.h> 
+#include <stdlib.h> 
 
 #include <ldap.h>
 #include <libconfig.h>
@@ -70,37 +71,29 @@ slack_ldap_search(const char *qval) {
 
     syslog(LOG_INFO, "Parsing ldap search result"); 
     
-    int errcodep; //result code from the result message
-    /* The server might supply a matched DN string in the message 
-     * indicating how much of a name in a request was recognized. 
-     * The matcheddnp parameter will be filled in with this string 
-     * if supplied, else it will be NULL. If a string is returned, 
-     * it should be freed useing ldap_memfree(); 
-     */
-    char *matcheddnp;
-    /* Same deal as matcheddnp, filled with error message field 
-     * from the parsed message. Should be freed with ldap_memfree
-     */
-    char *errmsgp;
-    /* Array of referral string from the parsed message. */ 
-    char **referralsp; 
-    /* Array of controls copied from the parsed message. */ 
-    LDAPControl **serverctrlsp; 
-
-    int parse_status = ldap_parse_result(ldap, result, &errcodep, &matcheddnp,
-            &errmsgp, &referralsp, &serverctrlsp, 0/*We manually free it*/);
-
-    syslog(LOG_INFO, "Parse status: %s", ldap_err2string(parse_status)); 
-    syslog(LOG_INFO, "Error (if any): %s", errmsgp ? errmsgp : "None"); 
-   
-
-    /* The messages are dynamically generated, so they must
-     * be manually freed or they just memleak all over the
-     * place. LDAP libraries FTW. */
-    ldap_memfree(matcheddnp); 
-    ldap_memfree(errmsgp); 
-    ldap_memvfree((void**)referralsp); 
-    ldap_controls_free(serverctrlsp); 
+    LDAPMessage *entry = ldap_first_entry(ldap, result); 
+    char *attribute; 
+    BerElement *ber; 
+    char **vals; 
+    int i;
+    if(entry != NULL) { 
+        syslog(LOG_INFO, "Found LDAP Entry..."); 
+        for(attribute = ldap_first_attribute(ldap, entry, &ber); 
+                attribute != NULL; 
+                attribute = ldap_next_attribute(ldap, entry, ber)) {
+            /* For each attribute print the attribute name and values */ 
+            if ((vals = ldap_get_values(ldap, entry, attribute)) != NULL) { 
+                for(i=0; vals[i] != NULL; i++) { 
+                    syslog(LOG_INFO, "FOUND VALUE %s: %s", attribute, vals[i]); 
+                }
+                ldap_value_free(vals); 
+            }
+            ldap_memfree(attribute); 
+        }
+        if(ber != NULL) { 
+            ber_free(ber, 0); 
+        }
+    }
     ldap_msgfree(result); 
 } 
              
