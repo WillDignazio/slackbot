@@ -48,23 +48,17 @@ const char *password;
 struct ldap_query_t head; 
 int version; 
 
-void set_query_filter(struct ldap_query_t *t, const char *qval) { 
-    char newfilter[strlen(t->filterstr) + strlen(qval)]; 
-    sprintf(newfilter, t->filterstr, qval); 
-    t->filterstr = newfilter; 
-}
-
 
 void
 slack_ldap_search(const char *qval) { 
     LDAPMessage *result; 
     syslog(LOG_INFO, "Performing ldap search for %s", qval); 
     
-    set_query_filter(&head, qval); 
-    syslog(LOG_INFO, "Query Filter: %s", head.filterstr);  
-    
+    char newfilter[strlen(head.filterstr) + strlen(qval)]; 
+    sprintf(newfilter, head.filterstr, qval); 
+
     int search_status = ldap_search_ext_s(
-            ldap, head.basednstr, LDAP_SCOPE_SUBTREE, "(uid=slackwill)"/*head.filterstr)*/, NULL, 
+            ldap, head.basednstr, LDAP_SCOPE_SUBTREE, newfilter, NULL, 
             0, NULL, NULL, &timeout, 1, &result);
     syslog(LOG_INFO, "Search Status: %s", ldap_err2string(search_status));
     if(search_status != LDAP_SUCCESS) { return; } // We should probably die 
