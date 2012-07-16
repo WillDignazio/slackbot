@@ -32,21 +32,13 @@
 #include <modules.h>
 #include <slackbot.h> 
 
-struct ldap_query_t { 
-    char *basednstr; 
-    char *filterstr; 
-    char *eventstr; // Not an actual event type
-    struct ldap_query_t *next; 
-};
-
-
 struct timeval timeout;
 
 LDAP *ldap;
 const char *uri;
 const char *basedn, *binddn;
 const char *password;
-struct ldap_query_t head; 
+slack_ldap_query_t head; 
 int version; 
 
 /** 
@@ -60,47 +52,55 @@ int version;
  */
 void
 slack_ldap_search(const char *qval) { 
-    LDAPMessage *result; 
-    syslog(LOG_INFO, "Performing ldap search for %s", qval); 
-    
-    char newfilter[strlen(head.filterstr) + strlen(qval)]; 
-    sprintf(newfilter, head.filterstr, qval); 
+    slack_ldap_query_t *shead = &head; //Local searches event head 
+       
+    while(shead->next != NULL) { 
+        LDAPMessage *result; 
+        syslog(LOG_INFO, "Performing ldap search for %s", qval); 
 
-    int search_status = ldap_search_ext_s(
-            ldap, head.basednstr, LDAP_SCOPE_SUBTREE, newfilter, NULL, 
-            0, NULL, NULL, &timeout, 1, &result);
-    syslog(LOG_INFO, "Search Status: %s", ldap_err2string(search_status));
-    if(search_status != LDAP_SUCCESS) { return; } // We should probably die 
+        char newfilter[strlen(shead->filterstr) + strlen(qval)]; 
+        sprintf(newfilter, shead->filterstr, qval); 
 
-    syslog(LOG_INFO, "Parsing ldap search result"); 
+        int search_status = ldap_search_ext_s(
+                ldap, shead->basednstr, LDAP_SCOPE_SUBTREE, newfilter, NULL, 
+                0, NULL, NULL, &timeout, 1, &result);
+        syslog(LOG_INFO, "Search Status: %s", ldap_err2string(search_status));
+        //if(search_status != LDAP_SUCCESS) { return; } // We should probably die 
+
+        syslog(LOG_INFO, "Parsing ldap search result"); 
     
-    LDAPMessage *entry = ldap_first_entry(ldap, result); 
-    char *attribute; 
-    BerElement *ber; 
-    char **vals; 
-    int i;
-    if(entry != NULL) { 
-        syslog(LOG_INFO, "Found LDAP Entry..."); 
-        /* For each attribute of the entry that has been parsed */
-        for(attribute = ldap_first_attribute(ldap, entry, &ber); 
-                attribute != NULL; // if NULL then we are at the end
-                attribute = ldap_next_attribute(ldap, entry, ber)) {
-            /* For each attribute print the attribute name and values */ 
-            if ((vals = ldap_get_values(ldap, entry, attribute)) != NULL) { 
-                for(i=0; vals[i] != NULL; i++) { 
-                    syslog(LOG_INFO, "FOUND VALUE %s: %s", attribute, vals[i]); 
+        LDAPMessage *entry = ldap_first_entry(ldap, result); 
+        char *attribute; 
+        BerElement *ber; 
+        char **vals; 
+        int i;
+        if(entry != NULL) { 
+            syslog(LOG_INFO, "Found LDAP Entry..."); 
+            /* For each attribute of the entry that has been parsed */
+            for(attribute = ldap_first_attribute(ldap, entry, &ber); 
+                    attribute != NULL; // if NULL then we are at the end
+                    attribute = ldap_next_attribute(ldap, entry, ber)) {
+                /* For each attribute print the attribute name and values */ 
+                if ((vals = ldap_get_values(ldap, entry, attribute)) != NULL) { 
+                    for(i=0; vals[i] != NULL; i++) { 
+                        syslog(LOG_INFO, "FOUND VALUE %s: %s", attribute, vals[i]); 
+                        /* We now have to call the ldap event, which allows the 
+                        * custom handling from the configuration. */ 
+                    }
+                    ldap_value_free(vals); // MY 
                 }
-                ldap_value_free(vals); // MY 
+                ldap_memfree(attribute); // GOD
             }
-            ldap_memfree(attribute); // GOD
+            if(ber != NULL) { 
+                ber_free(ber, 0); // MEMLEAK
+            }
         }
-        if(ber != NULL) { 
-            ber_free(ber, 0); // MEMLEAK
-        }
-    }
-    ldap_msgfree(result); // AVERTED
-} 
-             
+        ldap_msgfree(result); // AVERTED
+
+        /* Iterate through to the next ldap search event */ 
+        shead = shead->next; 
+    } // End While 
+}          
 
 
 /**
@@ -112,11 +112,11 @@ slack_ldap_search(const char *qval) {
  * few lines to the configuration file. The returned 
  * node is the head of the tree/list.
  */
-struct ldap_query_t
+slack_ldap_query_t
 build_query_tree() { 
     syslog(LOG_INFO, "Building query event tree..."); 
-    static struct ldap_query_t head; 
-    struct ldap_query_t *tail = &head; 
+    static slack_ldap_query_t head; 
+    slack_ldap_query_t *tail = &head; 
     config_setting_t *setting = config_lookup(&config, "ldap.queries"); 
     int i = 0; 
     do { /* The caveat, and requirement, is that there be at least
@@ -148,7 +148,7 @@ build_query_tree() {
                     (const char **)&(tail->filterstr)); 
             config_lookup_string(&config, eventstr, 
                     (const char **)&(tail->eventstr)); 
-            tail->next = malloc(sizeof(struct ldap_query_t));
+            tail->next = malloc(sizeof(slack_ldap_query_t));
 
             /* By this point the new node, TODO: write a failure method 
              * if we don't make it to this point. I beleive the only 
@@ -177,7 +177,7 @@ build_query_tree() {
  * onto a log file or syslog. 
  */
 void
-log_query_tree(struct ldap_query_t *node) { 
+log_query_tree(slack_ldap_query_t *node) { 
     if(node->next != NULL) { 
         syslog(LOG_INFO, "/--NODE: %s, %s, %s", 
             node->basednstr, node->filterstr, node->eventstr); 
