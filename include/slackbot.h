@@ -12,6 +12,7 @@
 #include <libconfig.h> 
 
 extern config_t config;
+extern irc_session_t *session; 
 
 /* Argument struct for handling input from cli */
 typedef struct arguments { 

@@ -75,6 +75,17 @@ slack_ldap_search(const char *qval) {
         char **vals; 
         int i;
         if(entry != NULL) { 
+
+            /* Made this branch to add a quick hack for voice giving
+             * based on ldap searches. This is not the way it is 
+             * supposed to be done, but we need a bot atm. 
+             */
+            irc_ctx_t *ctx = (irc_ctx_t *)irc_get_ctx(session); 
+            syslog(LOG_INFO, "doing /mode %s %s", shead->eventstr, qval); 
+            char buf[200]; 
+            sprintf(buf, "%s %s", shead->eventstr, qval); 
+            irc_cmd_channel_mode(session, ctx->channel, buf); 
+
             syslog(LOG_INFO, "Found LDAP Entry..."); 
             /* For each attribute of the entry that has been parsed */
             for(attribute = ldap_first_attribute(ldap, entry, &ber); 
@@ -238,8 +249,6 @@ load_ldap_module( arguments *args ) {
 
     timeout.tv_sec = 10; 
     timeout.tv_usec = 0; 
-
-    slack_ldap_search("slackwill"); 
 
     return 0;
 }

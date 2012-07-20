@@ -4,3 +4,4 @@ libircclient
 src/*.o
 src/modules/*.o
 slackbot.cfg
+slackbot

@@ -39,6 +39,7 @@ int DEBUG = 0;
 int NO_VERIFY = 0; 
 
 config_t config;
+irc_session_t *session; 
 
 const char *argp_program_version = "slackbot v0.1.0";
 const char *argp_program_bug_address = "<slackwill@csh.rit.edu>"; 
@@ -151,9 +152,7 @@ main(int argc, char *argv[]) {
     arguments.config = "slackbot.cfg";
 
     irc_callbacks_t callbacks;
-    irc_session_t *session; 
     irc_ctx_t ctx;  
-
     
     /** 
      * slackbot will display all of its logging 
