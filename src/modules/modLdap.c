@@ -224,8 +224,8 @@ load_ldap_module( arguments *args ) {
     config_lookup_string(&config, "ldap.binddn", &binddn); 
     syslog(LOG_INFO, "LDAP BINDDN: %s\n", binddn); 
     config_lookup_string(&config, "ldap.password", &password);
-    syslog(LOG_INFO, "LDAP PASSWORD: %s\n", password); 
-
+    // Removed displaying password 
+    
     syslog(LOG_INFO, "Initializing LDAP Connection...%s\n", 
         ldap_err2string(ldap_initialize(&ldap, uri)));
     

@@ -1,6 +1,8 @@
 #ifndef SLACKBOT_GAURD_H 
 #define SLACKBOT_GAURD_H 
 
+#include <semaphore.h> 
+
 #include <libircclient.h>
 #include <libirc_errors.h>
 #include <libirc_events.h>

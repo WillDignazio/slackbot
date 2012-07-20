@@ -21,3 +21,6 @@
  * @file event.c
  * @author William Dignazio <slackwill@csh.rit.edu>
  */
+
+#include <slackbot.h> 
+#include <modules.h> 

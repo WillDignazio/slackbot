@@ -62,8 +62,8 @@ slack_handler_join(
     irc_cmd_msg(session, ctx->channel, buf);*/
     char *buf[100]; 
     char *buf2[100]; 
-    irc_target_get_nick(origin, buf, 100); 
-    sprintf(buf2, msg, buf);
+    irc_target_get_nick(origin, (char*)buf, 100); 
+    sprintf((char*)buf2, msg, (char*)buf);
     slack_ldap_search((const char *)buf); 
-    irc_cmd_msg(session, ctx->channel, buf2); 
+    irc_cmd_msg(session, ctx->channel, (char*)buf2); 
 }

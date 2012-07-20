@@ -131,6 +131,11 @@ parse_opt (int key, char *arg, struct argp_state *state) {
 
 static struct argp argp = {options, parse_opt, args_doc, doc };
 
+void test(int a, int b, int c, int d) { 
+    printf("%d%d%d%d", a, b, c, d); 
+}
+
+
 int 
 main(int argc, char *argv[]) { 
 
@@ -143,7 +148,7 @@ main(int argc, char *argv[]) {
     arguments.channel = "#slackbot";
     arguments.ldap_host = "localhost"; 
     arguments.ldap_port = 389;
-    arguments.config = "~/.config/slackbot.cfg";
+    arguments.config = "slackbot.cfg";
 
     irc_callbacks_t callbacks;
     irc_session_t *session; 
@@ -194,9 +199,6 @@ main(int argc, char *argv[]) {
        They take precedence over all the others. */
     argp_parse(&argp, argc, argv, 0, 0, &arguments); 
 
-    /* Load all the modules of the program */ 
-    load_all_modules(&arguments);
-
     //clear the callbacks just in case 
     memset(&callbacks, 0, sizeof(callbacks)); 
    
@@ -232,6 +234,13 @@ main(int argc, char *argv[]) {
     syslog(LOG_INFO, "User: %s", arguments.user); 
     syslog(LOG_INFO, "Name: %s", arguments.name);
     syslog(LOG_INFO, "Channel: %s", arguments.channel);
+
+    /* Moved from modules.c, it's easier to just manually
+     * add them to the main file. I guess from here in to 
+     * load a module you must specify when/where you want
+     * to load it. NOT dynamically for now. 
+     */
+    load_ldap_module(&arguments);
 
     /* Uses the arguments given with argp, addend new ones 
      * to the options and arguments struct, and add handlers 
