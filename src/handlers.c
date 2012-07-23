@@ -52,7 +52,6 @@ slack_handler_join(
         unsigned int count) { 
     irc_ctx_t *ctx = (irc_ctx_t *)irc_get_ctx(session); 
     syslog(LOG_INFO, "%s connected to channel %s", origin, ctx->channel);
-    const char *msg = "Good news everyone! %s has joined the channel!"; 
     /*char *u = strchr(origin, '!'); 
     int taillen = strlen(u); 
     char buf[strlen(msg) + (strlen(origin)-taillen)];
@@ -61,9 +60,7 @@ slack_handler_join(
     sprintf(buf, msg, nick); 
     irc_cmd_msg(session, ctx->channel, buf);*/
     char *buf[100]; 
-    char *buf2[100]; 
     irc_target_get_nick(origin, (char*)buf, 100); 
-    sprintf((char*)buf2, msg, (char*)buf);
+
     slack_ldap_search((const char *)buf); 
-    irc_cmd_msg(session, ctx->channel, (char*)buf2); 
 }
