@@ -3,12 +3,12 @@ LD = ld
 LIBS = -L./libircclient-1.6/src  $(LIB_FLAGS)
 LIB_FLAGS = -lircclient -lpthread -lnsl -lssl
 CFLAGS = -Wall -pthread $(INCLUDES)
-INCLUDES = -I/usr/include -I./include 
+INCLUDES = -I/usr/include -I./include -I./libircclient-1.6/include 
 
 all: link
 
 link: build
-	$(CC) -o slackbot src/slackbot.o src/handlers.o src/event.o src/modules/modLdap.o -L/usr/local/lib -L/usr/lib -lircclient -L/usr/lib64 -lpthread -lnsl -lssl -lcrypto -lldap -lconfig -llber
+	$(CC) -o slackbot src/slackbot.o src/handlers.o src/event.o src/modules/modLdap.o -L/usr/local/lib -L/usr/lib -lircclient -L/usr/lib64 -L./libircclient-1.6/src -lpthread -lnsl -lssl -lcrypto -lldap -lconfig -llber
 
 build: modules 
 	$(CC) $(CFLAGS) -c -o src/slackbot.o ./src/slackbot.c
