@@ -19,7 +19,7 @@ build: modules
 
 modules: $(MODULES)
 	for $(file) in $(MODULES); do \
-		$(MODULES) $(CFLAGS) -o ${$(file):.c=.o} -c $(file);
+		$(CC) $(CFLAGS) -o ${$(file):.c=.o} -c $(file); \
 	done;
 	#$(CC) $(CFLAGS) -c -o src/modules/modLdap.o ./src/modules/modLdap.c
 
