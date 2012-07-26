@@ -5,7 +5,7 @@
 CC = clang
 LD = ld 
 AR = ar
-LIBS = -L./libircclient-1.6/src  -L/usr/local/lib -L/usr/lib -L/usr/lib64 $(LDFLAGS)
+LIBS = -L./libircclient-1.6/src -L/usr/local/lib -L/usr/lib -L/usr/lib64 $(LDFLAGS)
 LDFLAGS = -lircclient -lpthread -lnsl -lssl -lcrypto -lldap -lconfig -llber
 CFLAGS = -Wall -pthread $(INCLUDES)
 INCLUDES = -I/usr/include -I./include -I./libircclient-1.6/include
@@ -23,7 +23,7 @@ MODULE_ARCHIVES = $(wildcard src/modules/*.a)
 all: link
 
 link: build
-	@$(CC) $(LIBS) -o $(BIN)/slackbot src/slackbot.o src/handlers.o src/event.o 
+	@$(CC) $(CFLAGS) $(LIBS) -o $(BIN)/slackbot src/slackbot.o src/handlers.o src/event.o 
 	@echo "CC	slackbot"
 
 # Combs through the source files, and compiles 
@@ -72,7 +72,7 @@ libircclient:
 	wget --progress=dot "http://downloads.sourceforge.net/project/libircclient/libircclient/1.6/libircclient-1.6.tar.gz?r=http%3A%2F%2Fsourceforge.net%2Fprojects%2Flibircclient%2F&ts=1341897650&use_mirror=hivelocity" -O libircclient-1.6.tar.gz
 	tar -zxvf ./libircclient-1.6.tar.gz
 	cd libircclient-1.6; \
-		./configure --enable-openssl --enable-ipv6; \
+		./configure --enable-openssl --enable-ipv6 --enable-shared; \
 		make
 
 # Cleans all directories, including libbircclient
