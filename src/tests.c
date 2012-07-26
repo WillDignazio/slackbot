@@ -28,7 +28,6 @@
 #include <CUnit/TestRun.h> 
 #include <CUnit/Automated.h> 
 #include <CUnit/Basic.h> 
-#include <CUnit/Consol.h> 
-#include <CUnit/CUCurses.h> 
+#include <CUnit/Console.h> 
 
 /* TODO: Implement Unit Tests */
