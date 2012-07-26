@@ -23,7 +23,7 @@ MODULE_ARCHIVES = $(wildcard src/modules/*.a)
 all: link
 
 link: build
-	@$(CC) $(LIBS) -o $(BIN)/slackbot src/slackbot.o src/handlers.o src/event.o $(MODULE_ARCHIVES)
+	@$(CC) $(LIBS) -o $(BIN)/slackbot src/slackbot.o src/handlers.o src/event.o 
 	@echo "CC	slackbot"
 
 # Combs through the source files, and compiles 
@@ -74,6 +74,7 @@ libircclient:
 	cd libircclient-1.6; \
 		./configure --enable-openssl --enable-ipv6; \
 		make
+
 # Cleans all directories, including libbircclient
 clean: 
 	rm -f ./slackbot
