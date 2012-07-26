@@ -8,7 +8,7 @@ AR = ar
 LIBS = -L./libircclient-1.6/src  -L/usr/local/lib -L/usr/lib -L/usr/lib64 $(LDFLAGS)
 LDFLAGS = -lircclient -lpthread -lnsl -lssl -lcrypto -lldap -lconfig -llber
 CFLAGS = -Wall -pthread $(INCLUDES)
-INCLUDES = -I/usr/include -I./include
+INCLUDES = -I/usr/include -I./include -I./libircclient-1.6/include
 
 BIN = bin
 SOURCE = $(wildcard src/*.c)
