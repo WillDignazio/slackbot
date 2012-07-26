@@ -10,6 +10,7 @@ LDFLAGS = -lircclient -lpthread -lnsl -lssl -lcrypto -lldap -lconfig -llber
 CFLAGS = -Wall -pthread $(INCLUDES)
 INCLUDES = -I/usr/include -I./include
 
+BIN = bin
 SOURCE = $(wildcard src/*.c)
 MODULES = $(wildcard src/modules/*.c)
 MODULE_ARCHIVES = $(wildcard src/modules/*.a)
@@ -21,9 +22,8 @@ MODULE_ARCHIVES = $(wildcard src/modules/*.a)
 # slackbot executable in the working directory. 
 all: link
 
-
 link: build
-	@$(CC) $(LIBS) -o slackbot src/slackbot.o src/handlers.o src/event.o $(MODULE_ARCHIVES)
+	@$(CC) $(LIBS) -o $(BIN)/slackbot src/slackbot.o src/handlers.o src/event.o $(MODULE_ARCHIVES)
 	@echo "CC	slackbot"
 
 # Combs through the source files, and compiles 
@@ -44,13 +44,22 @@ build: modules
 # the modules within the directory from the slackbot.c
 # source. This is why modules is a dependency of build,
 # without all of these files being built before hand, 
-# they would not be linked into the main source. 
-modules: $(MODULES)
+# they would not be linked into the main source. As
+# a consequence of the dlopen system, they need to 
+# be in a static location, this is defined in the 
+# configuration file. This however does also bring 
+# the benefit of a drag and drop module system, where
+# you could mid execution load a new module.
+modules: $(MODULES) 
+	@mkdir -p $(BIN)/ 
+	@mkdir -p $(BIN)/modules
 	@for file in $(MODULES); do \
 		echo "CC	$${file:0:-2}.o"; \
 		$(CC) $(CFLAGS) -o $${file:0:-2}.o -c $$file; \
 		echo "AR	$${file:0:-2}.a"; \
 		$(AR) rcs -o $${file:0:-2}.a  $${file:0:-2}.o; \
+		echo "CP 	`basename $${file:0:-2}.a`"; \
+		cp $${file:0:-2}.a $(BIN)/modules/`basename $${file:0:-2}.a`; \
 	done;
 
 # Makes the process of getting the libircclient source 

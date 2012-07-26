@@ -27,7 +27,6 @@
 #include <string.h>
 
 #include <slackbot.h> 
-#include <modules.h> 
 
 void
 slack_handler_connect(

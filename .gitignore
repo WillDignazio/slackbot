@@ -8,3 +8,4 @@ src/modules/*.o
 src/*.a
 src/modules/*.a
 slackbot.cfg
+slackbot

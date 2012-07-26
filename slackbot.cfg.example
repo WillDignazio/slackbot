@@ -4,6 +4,7 @@ version = "0.0.1";
 host="localhost"; #localhost for SSL
 port=6667;
 ssl_no_verify=false; #Verify your SSL connection?
+modules=./bin/modules
 
 ldap: 
 { 

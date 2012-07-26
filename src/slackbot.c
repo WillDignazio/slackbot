@@ -32,7 +32,6 @@
 #include <unistd.h>
 #include <argp.h>
 
-#include <modules.h>
 #include <slackbot.h> 
 
 int DEBUG = 0; 
@@ -234,13 +233,6 @@ main(int argc, char *argv[]) {
     syslog(LOG_INFO, "User: %s", arguments.user); 
     syslog(LOG_INFO, "Name: %s", arguments.name);
     syslog(LOG_INFO, "Channel: %s", arguments.channel);
-
-    /* Moved from modules.c, it's easier to just manually
-     * add them to the main file. I guess from here in to 
-     * load a module you must specify when/where you want
-     * to load it. NOT dynamically for now. 
-     */
-    load_ldap_module(&arguments);
 
     /* Uses the arguments given with argp, addend new ones 
      * to the options and arguments struct, and add handlers 
