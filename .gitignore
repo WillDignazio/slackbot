@@ -10,3 +10,5 @@ src/modules/*.a
 slackbot.cfg
 slackbot
 bin/
+*.tar.gz
+*.gz

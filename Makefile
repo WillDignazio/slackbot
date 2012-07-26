@@ -83,4 +83,5 @@ clean:
 	rm -f ./src/*.a
 	rm -f ./src/modules/*.a
 	rm -f libircclient-1.6.tar.gz
+	rm -rf $(BIN) 
 	@make -C libircclient-1.6/ clean
