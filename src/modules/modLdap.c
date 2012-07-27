@@ -29,12 +29,25 @@
 #include <ldap.h>
 #include <libconfig.h>
 
-#include <modules.h>
 #include <slackbot.h> 
+#include <module.h> 
 
-struct timeval timeout;
+typedef struct slack_event_t { 
+    struct slack_event_t *next; 
+    void (*event_fp) ; 
+}slack_event_t; 
+
+typedef struct slack_ldap_query_t { 
+    char *basednstr; 
+    char *filterstr; 
+    char *eventstr; // Not an actual event type
+    struct slack_ldap_query_t *next; 
+} slack_ldap_query_t;
+
+void slack_ldap_search(const char *); 
 
 LDAP *ldap;
+struct timeval timeout;
 const char *uri;
 const char *basedn, *binddn;
 const char *password;
@@ -191,8 +204,8 @@ log_query_tree(slack_ldap_query_t *node) {
  * given initially, which are to be used in the 
  * ldap module. 
  */
-int 
-load_ldap_module( arguments *args ) { 
+void
+module_init() { 
 
     syslog(LOG_INFO, "LDAP Module initalizing"); 
     
@@ -238,8 +251,4 @@ load_ldap_module( arguments *args ) {
 
     timeout.tv_sec = 10; 
     timeout.tv_usec = 0; 
-
-    slack_ldap_search("slackwill"); 
-
-    return 0;
 }

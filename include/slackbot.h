@@ -13,6 +13,17 @@
 
 extern config_t config;
 
+/* All encompassing event for the event 
+ * stack structure */ 
+typedef struct slack_event { 
+   irc_event_callback_t callback; 
+   irc_event_dcc_chat_t dcc; 
+   irc_event_dcc_send_t dccsend; 
+   irc_eventcode_callback_t ecode; 
+   struct slack_event **supplement; 
+   struct slack_event *next; 
+} slack_event; 
+
 /* Argument struct for handling input from cli */
 typedef struct arguments { 
     char *args[2]; // increase with every added argument
@@ -33,13 +44,13 @@ typedef struct {
     char *nick; 
 }irc_ctx_t;
 
+/*#################################
+  #         Event Handlers        #
+  #################################*/ 
 void slack_handler_connect(irc_session_t*, const char*, const char*, const char **, unsigned int);
 void slack_handler_join(irc_session_t*, const char*, const char*, const char **, unsigned int);
 
-int load_all_modules(arguments*); 
-
-/* Individual module initializer functions 
- * Defined in their respective module files. */
-int load_ldap_module(arguments*); 
+void push(slack_event*); 
+int broadcast(slack_event*); 
 
 #endif 

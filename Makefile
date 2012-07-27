@@ -55,7 +55,7 @@ modules: $(MODULES)
 	@mkdir -p $(BIN)/modules
 	@for file in $(MODULES); do \
 		echo "CC	$${file:0:-2}.o"; \
-		$(CC) $(CFLAGS) -o $${file:0:-2}.o -c $$file; \
+		$(CC) $(CFLAGS) -Wno-unused-function -o $${file:0:-2}.o -c $$file; \
 		echo "AR	$${file:0:-2}.a"; \
 		$(AR) rcs -o $${file:0:-2}.a  $${file:0:-2}.o; \
 		echo "CP 	`basename $${file:0:-2}.a`"; \
