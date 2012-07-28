@@ -226,13 +226,17 @@ main(int argc, char *argv[]) {
         syslog(LOG_INFO, "Disabled SSL verification"); 
     }
 
-    syslog(LOG_INFO, "Connecting with: "); 
+    // TODO: Add these to some verbose option or better log file
+    /*syslog(LOG_INFO, "Connecting with: "); 
     syslog(LOG_INFO, "Host: %s", arguments.host); 
     syslog(LOG_INFO, "Port: %d", arguments.port);
     syslog(LOG_INFO, "Nick: %s", arguments.nick); 
     syslog(LOG_INFO, "User: %s", arguments.user); 
     syslog(LOG_INFO, "Name: %s", arguments.name);
-    syslog(LOG_INFO, "Channel: %s", arguments.channel);
+    syslog(LOG_INFO, "Channel: %s", arguments.channel);*/
+
+    /* Initialize the event system */ 
+    init_event_system(); 
 
     /* Uses the arguments given with argp, addend new ones 
      * to the options and arguments struct, and add handlers 
@@ -254,7 +258,6 @@ main(int argc, char *argv[]) {
             syslog(LOG_INFO, "IRC run failed uncleanly"); 
             printf("Session run error: %d\n", status); 
         }
-
     }
 
     irc_disconnect(session);

@@ -23,8 +23,12 @@
  */
 
 #include <stdlib.h>
+#include <stdio.h> 
+#include <sys/types.h> 
+#include <dirent.h> 
 #include <syslog.h> 
 #include <pthread.h> 
+#include <dlfcn.h> 
 
 #include <slackbot.h> 
 /* Main event queue objects */ 
@@ -41,9 +45,14 @@ pthread_mutex_t lock;
  */ 
 void 
 push_async(slack_event *event) { 
-   pthread_t ept; 
-   if(pthread_create(&ept, NULL, &push, NULL))
+    
+    pthread_t ept; // event pthread
+    pthread_t bpt; // broadcast pthread 
+
+    if(pthread_create(&ept, NULL, (void*)&push, NULL)) 
         syslog(LOG_INFO, "Error pushing event"); 
+    if(pthread_create(&bpt, NULL, (void*)&broadcast, NULL)) 
+        syslog(LOG_INFO, "Error starting broadcast thread");  
 }
 
 /**
@@ -67,8 +76,24 @@ push(slack_event *event) {
             EVENT_QUEUE_FRONT = event; 
         }
     }
-
+    /* Let the rest of the party have it. */ 
     pthread_mutex_unlock(&lock); 
+}
+
+
+void
+load_modules() { 
+    const char *modpath; 
+    config_lookup_string(&config, "modules", &modpath); 
+    DIR *dp; 
+    struct dirent *ep;
+
+    dp = opendir(modpath); 
+    if(dp != NULL) {
+        //TODO: Use dlopen() to import the modules from the module dir 
+    } else { 
+        syslog(LOG_INFO, "Module Path Invalid, Loading No Modules!"); 
+    }
 }
 
 /** 
@@ -76,21 +101,24 @@ push(slack_event *event) {
  * necessary data for the event queue system. 
  */ 
 void
-init_event_queue() { 
+init_event_system() { 
+    /* Build the mutex lock so we can push to the event queue safely */ 
     if(pthread_mutex_init(&lock, NULL) != 0) { 
         syslog(LOG_INFO, "Mutex initialization failed"); 
         exit(1); 
     }
+
+    /* Load all the modules from the specified module directory 
+     * in slackbot.cfg */ 
+     load_modules(); 
 }
 
 /**
- * Called when the bot needs to broadcast
- * an event onto the event queue. This essentially 
- * means that this event has been slated to be 
- * recieved by all the modules that have been 
- * loaded. 
- */ 
+  * Continuous function meant to be run in it's 
+  * own thread. It is used to broadcast all the events
+  * in the event queue to the subscribed modules.
+  */ 
 int 
-broadcast(slack_event *event) { 
+broadcast() { 
     return 0; 
  }

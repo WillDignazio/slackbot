@@ -44,6 +44,8 @@ typedef struct {
     char *nick; 
 }irc_ctx_t;
 
+void init_event_system(); 
+
 /*#################################
   #         Event Handlers        #
   #################################*/ 
@@ -51,6 +53,7 @@ void slack_handler_connect(irc_session_t*, const char*, const char*, const char 
 void slack_handler_join(irc_session_t*, const char*, const char*, const char **, unsigned int);
 
 void push(slack_event*); 
-int broadcast(slack_event*); 
+void push_async(slack_event*); 
+int broadcast(); 
 
 #endif 
