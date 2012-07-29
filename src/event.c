@@ -90,7 +90,10 @@ load_modules() {
 
     dp = opendir(modpath); 
     if(dp != NULL) {
-        //TODO: Use dlopen() to import the modules from the module dir 
+        while((ep=readdir(dp))) { 
+            syslog(LOG_INFO, "Attempting to load module %s", ep->d_name); 
+        }
+        closedir(dp);     
     } else { 
         syslog(LOG_INFO, "Module Path Invalid, Loading No Modules!"); 
     }
